@@ -74,9 +74,9 @@ groq_headers = {
     "Content-Type": "application/json"
 }
 
-# Using llama-3.2-11b-vision-preview which is active on standard Groq free tiers
+# Active flagship production model on Groq
 payload = {
-    "model": "llama-3.2-11b-vision-preview",
+    "model": "llama-3.3-70b-versatile",
     "messages": [{"role": "user", "content": prompt}],
     "temperature": 0.5
 }
