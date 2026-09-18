@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 # ==========================================
-# 1. EXPANDED RSS SOURCES (LEADING SITES & MACRO)
+# 1. EXPANDED RSS SOURCES
 # ==========================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip().strip("'").strip('"')
 
@@ -50,7 +50,7 @@ def clean_url(url_str):
 # ==========================================
 # 2. INGEST & DEDUPLICATE LIVE FEEDS
 # ==========================================
-print("=== Step 1: Ingesting Fresh Market News Across Global Sources ===")
+print("=== Step 1: Ingesting Fresh Market News ===")
 now_ist = datetime.now(ZoneInfo("Asia/Kolkata"))
 current_time_str = now_ist.strftime("%I:%M %p IST")
 now_utc = datetime.now(timezone.utc)
@@ -78,7 +78,6 @@ for cat_name, feed_urls in CATEGORY_FEEDS.items():
     else:
         category_data[cat_name] = ["Benchmark levels maintain steady intraday bounds."]
 
-# Build unique signature hash of current fetched headlines
 raw_combined_text = " | ".join(all_headlines_flat)
 current_content_hash = hashlib.md5(raw_combined_text.encode('utf-8')).hexdigest()
 
@@ -96,12 +95,11 @@ if os.path.exists(HISTORY_FILE):
     except Exception as e:
         print(f"⚠️ Load error on history.json: {e}")
 
-# Check if latest saved block matches current content hash
 latest_hash = blocks_history[0].get("hash") if blocks_history else None
 
 if latest_hash == current_content_hash:
     print("ℹ️ No new market updates detected in this 15-minute window. Skipping duplicate block creation!")
-    sys.exit(0)  # Exit cleanly without appending duplicate card
+    sys.exit(0)
 
 # ==========================================
 # 4. SYNTHESIZE DETAILED LAYMAN COMMENTARY
@@ -232,51 +230,53 @@ pivot_table_html = f"""
 
 ist_time = now_ist.strftime("%b %d, %Y | %I:%M %p IST")
 
-full_html = (
-    "<!DOCTYPE html>\n"
-    '<html lang="en">\n'
-    "<head>\n"
-    '    <meta charset="UTF-8">\n'
-    '    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
-    '    <meta http-equiv="refresh" content="300">\n'
-    "    <title>Live Market Feed & Pre-Market Briefing</title>\n"
-    "    <style>\n"
-    "        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 850px; margin: 30px auto; padding: 20px; color: #2c3e50; line-height: 1.6; background-color: #f8f9fa; }}\n"
-    "        h1 {{ color: #0d47a1; font-size: 1.8em; margin-bottom: 5px; }}\n"
-    "        .timestamp {{ color: #666; font-weight: 600; font-size: 0.9em; margin-bottom: 15px; }}\n"
-    "        .badge {{ background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold; display: inline-block; margin-bottom: 20px; }}\n"
-    "        hr {{ border: 0; height: 1px; background: #e0e0e0; margin-bottom: 20px; }}\n"
-    "        .time-card {{ background: #ffffff; border-left: 5px solid #2e7d32; padding: 18px 22px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); margin-bottom: 18px; }}\n"
-    "        .time-header {{ font-weight: bold; color: #1b5e20; font-size: 1.05em; margin-bottom: 12px; }}\n"
-    "        .pivot-section {{ background: #ffffff; padding: 20px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }}\n"
-    "        .pivot-section h3 {{ margin-top: 0; color: #0d47a1; font-size: 1.1em; margin-bottom: 15px; }}\n"
-    "        .pivot-table {{ width: 100%; border-collapse: collapse; text-align: left; }}\n"
-    "        .pivot-table th, .pivot-table td {{ padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 0.95em; }}\n"
-    "        .pivot-table th {{ background-color: #f1f5f9; color: #334155; }}\n"
-    "        .card {{ background: #ffffff; border-left: 5px solid #1976d2; padding: 20px 25px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }}\n"
-    "        .support {{ color: #d32f2f; font-weight: 600; }}\n"
-    "        .pivot {{ color: #1976d2; font-weight: 600; }}\n"
-    "        .resistance {{ color: #2e7d32; font-weight: 600; }}\n"
-    "        ul {{ padding-left: 18px; margin: 0; }}\n"
-    "        li {{ margin-bottom: 10px; font-size: 0.95em; color: #333; }}\n"
-    "    </style>\n"
-    "</head>\n"
-    "<body>\n"
-    "    <h1>Live Market Feed & Pre-Market Briefing</h1>\n"
-    f'    <div class="timestamp">🕒 Last Updated: {ist_time}</div>\n'
-    '    <div class="badge">🔴 15-Minute Live Commentary Stream</div>\n'
-    "    <hr>\n"
-    '    <h3 style="color:#2e7d32; margin-bottom:15px;">📰 Live Market Commentary (15-Min Stream)</h3>\n'
-    f"    {commentary_blocks_html}\n"
-    f"    {pivot_table_html}\n"
-    '    <div class="card">\n'
-    '        <h3 style="margin-top:0; color:#0d47a1;">☕ Morning Pre-Market Takeaway</h3>\n'
-    '        <p><b>Market Bias: Moderately Bullish</b></p>\n'
-    '        <ul><li><b>Core Outlook:</b> Domestic institutional support and steady global oil prices provide positive morning momentum for Indian equities.</li></ul>\n'
-    "    </div>\n"
-    "</body>\n"
-    "</html>"
-)
+css_styles = """
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 30px auto; padding: 20px; color: #2c3e50; line-height: 1.6; background-color: #f8f9fa; }
+    h1 { color: #0d47a1; font-size: 2em; margin-bottom: 5px; }
+    .timestamp { color: #666; font-weight: 600; font-size: 0.95em; margin-bottom: 15px; }
+    .badge { background: #e8f5e9; color: #2e7d32; padding: 6px 12px; border-radius: 4px; font-size: 0.85em; font-weight: bold; display: inline-block; margin-bottom: 20px; }
+    hr { border: 0; height: 1px; background: #e0e0e0; margin-bottom: 25px; }
+    .time-card { background: #ffffff; border-left: 5px solid #2e7d32; padding: 22px 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 22px; }
+    .time-header { font-weight: bold; color: #1b5e20; font-size: 1.15em; margin-bottom: 14px; }
+    .pivot-section { background: #ffffff; padding: 22px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 22px; }
+    .pivot-section h3 { margin-top: 0; color: #0d47a1; font-size: 1.2em; margin-bottom: 15px; }
+    .pivot-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .pivot-table th, .pivot-table td { padding: 12px 14px; border-bottom: 1px solid #eee; font-size: 1em; }
+    .pivot-table th { background-color: #f1f5f9; color: #334155; }
+    .card { background: #ffffff; border-left: 5px solid #1976d2; padding: 22px 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 22px; }
+    .support { color: #d32f2f; font-weight: 600; }
+    .pivot { color: #1976d2; font-weight: 600; }
+    .resistance { color: #2e7d32; font-weight: 600; }
+    ul { padding-left: 20px; margin: 0; }
+    li { margin-bottom: 12px; font-size: 1em; color: #2c3e50; }
+"""
+
+full_html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="300">
+    <title>Live Market Feed & Pre-Market Briefing</title>
+    <style>
+{css_styles}
+    </style>
+</head>
+<body>
+    <h1>Live Market Feed & Pre-Market Briefing</h1>
+    <div class="timestamp">🕒 Last Updated: {ist_time}</div>
+    <div class="badge">🔴 15-Minute Live Commentary Stream</div>
+    <hr>
+    <h3 style="color:#2e7d32; margin-bottom:15px; font-size:1.3em;">📰 Live Market Commentary (15-Min Stream)</h3>
+    {commentary_blocks_html}
+    {pivot_table_html}
+    <div class="card">
+        <h3 style="margin-top:0; color:#0d47a1; font-size:1.2em;">☕ Morning Pre-Market Takeaway</h3>
+        <p><b>Market Bias: Moderately Bullish</b></p>
+        <ul><li><b>Core Outlook:</b> Domestic institutional support and steady global oil prices provide positive morning momentum for Indian equities.</li></ul>
+    </div>
+</body>
+</html>"""
 
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
