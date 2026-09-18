@@ -9,13 +9,7 @@ from zoneinfo import ZoneInfo
 # ==========================================
 # 1. SECRETS VALIDATION & CLEANING
 # ==========================================
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-
-if not GROQ_API_KEY:
-    print("⚠️ WARNING: Missing GROQ_API_KEY secret. Will use direct RSS mode.")
-    GROQ_API_KEY = ""
-else:
-    GROQ_API_KEY = GROQ_API_KEY.strip().strip("'").strip('"')
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip().strip("'").strip('"')
 
 RAW_RSS_FEEDS = [
     "https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en",
@@ -56,23 +50,24 @@ news_text = "\n".join(articles)
 print(f"Total articles gathered: {len(articles)}")
 
 # ==========================================
-# 3. GENERATE AI SUMMARY VIA GROQ (6 SECTIONS, MAX 100 WORDS)
+# 3. GENERATE AI SUMMARY VIA GROQ
 # ==========================================
 print("=== Step 2: Generating Market Summary ===")
 prompt = f"""
-You are a financial journalist. Explain these news articles in super simple layman's terms.
-Organize the update into EXACTLY 6 short sections with bold subheadings:
-1. <b>Indian Stock Market</b>
-2. <b>Global Markets</b>
-3. <b>Forex</b>
-4. <b>Crypto</b>
-5. <b>Crude & Commodities</b>
-6. <b>Economy & Inflation</b>
+You are a financial journalist. Summarize these news articles into simple layman terms under 100 words total.
+Organize into EXACTLY 6 HTML blocks formatted as:
 
-CRITICAL RULES:
-- The ENTIRE summary must be MAX 100 WORDS TOTAL. Be extremely brief (1 short sentence per section).
-- Return ONLY clean HTML content inside `<div>` blocks or `<p>` tags. 
-- Do NOT include Markdown block quotes like ```html or <html><body> wrappers.
+<div class="block"><h3>1. Indian Stock Market</h3><p>Simple short text here.</p></div>
+<div class="block"><h3>2. Global Markets</h3><p>Simple short text here.</p></div>
+<div class="block"><h3>3. Forex</h3><p>Simple short text here.</p></div>
+<div class="block"><h3>4. Crypto</h3><p>Simple short text here.</p></div>
+<div class="block"><h3>5. Crude & Commodities</h3><p>Simple short text here.</p></div>
+<div class="block"><h3>6. Economy & Inflation</h3><p>Simple short text here.</p></div>
+
+RULES:
+- Max 100 words total for the entire response.
+- Do NOT include markdown blocks like ```html.
+- Keep explanation super basic for beginners.
 
 Articles:
 {news_text}
@@ -86,11 +81,7 @@ groq_headers = {
     "Content-Type": "application/json"
 }
 
-MODELS_TO_TRY = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant"
-]
-
+MODELS_TO_TRY = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
 ai_html_content = None
 
 if GROQ_API_KEY:
@@ -112,14 +103,26 @@ if GROQ_API_KEY:
         except Exception as err:
             print(f"⚠️ Request error with {model_name}: {err}")
 
-# Fail-safe RSS Fallback if Groq API fails or key is missing
+# Fallback structured 6-block layout if Groq call fails
 if not ai_html_content:
-    print("⚠️ Groq API unavailable/unauthorized. Falling back to live RSS feed headlines.")
-    bullet_items = "".join([f"<li><b>{item.strip('- ')}</b></li>" for item in articles[:6]])
-    ai_html_content = f"<h3>Latest Live Market Headlines</h3><ul>{bullet_items}</ul>"
+    print("⚠️ Groq API unavailable. Rendering structured 6-block layout from feeds.")
+    categories = [
+        "Indian Stock Market", "Global Markets", "Forex", 
+        "Crypto", "Crude & Commodities", "Economy & Inflation"
+    ]
+    blocks = []
+    for idx, cat in enumerate(categories):
+        headline = articles[idx % len(articles)].replace("- ", "")
+        blocks.append(f"""
+        <div class="block">
+            <h3>{idx+1}. {cat}</h3>
+            <p>{headline}</p>
+        </div>
+        """)
+    ai_html_content = "".join(blocks)
 
 # ==========================================
-# 4. CONSTRUCT HTML PAGE WITH MODERN GRID CARDS
+# 4. CONSTRUCT HTML PAGE (GRID LAYOUT)
 # ==========================================
 print("=== Step 3: Formatting HTML Page with Live IST Timestamp ===")
 ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%b %d, %Y | %I:%M %p IST")
@@ -129,7 +132,7 @@ full_html = f"""<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Financial Market Updates</title>
+    <title>Daily Market Snapshot</title>
     <style>
         body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -137,7 +140,8 @@ full_html = f"""<!DOCTYPE html>
             margin: 40px auto;
             padding: 20px;
             color: #333;
-            line-height: 1.6;
+            line-height: 1.5;
+            background-color: #f4f6f9;
         }}
         h1 {{
             color: #0d47a1;
@@ -155,20 +159,28 @@ full_html = f"""<!DOCTYPE html>
             background: #e0e0e0;
             margin-bottom: 25px;
         }}
-        .card {{
-            background: #f8f9fa;
+        .grid-container {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }}
+        .block {{
+            background: #ffffff;
             border-left: 4px solid #1976d2;
-            padding: 20px;
+            padding: 15px;
             border-radius: 6px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }}
-        .card p, .card div {{
-            margin-bottom: 12px;
-        }}
-        b {{
+        .block h3 {{
+            margin-top: 0;
+            margin-bottom: 8px;
             color: #0d47a1;
-            display: inline-block;
+            font-size: 1.05em;
+        }}
+        .block p {{
+            margin: 0;
+            font-size: 0.92em;
+            color: #444;
         }}
     </style>
 </head>
@@ -176,7 +188,7 @@ full_html = f"""<!DOCTYPE html>
     <h1>Daily Market Snapshot</h1>
     <div class="timestamp">🕒 Last Updated: {ist_time}</div>
     <hr>
-    <div class="card">
+    <div class="grid-container">
         {ai_html_content}
     </div>
 </body>
@@ -189,4 +201,4 @@ print("=== Step 4: Writing index.html file ===")
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print
+print("✅ Successfully generated index.html!")
