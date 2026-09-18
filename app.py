@@ -54,10 +54,9 @@ print(f"Total articles gathered: {len(articles)}")
 # ==========================================
 print("=== Step 2: Generating Market Summary ===")
 prompt = f"""
-You are a top financial journalist. Summarize the following news articles in simple layman terms.
-Provide a clear, high-value summary of at least 100-150 words.
-Return ONLY clean HTML body content using bullet points (`<ul>`, `<li>`), `<h3>` subheadings, and bold tags (`<b>`). 
-Do not include Markdown block quotes like ```html or <html><body> wrappers.
+You are an expert financial journalist. Summarize the following market news into a clear, engaging 150-word report for everyday readers.
+Use simple layman terms. Break the output into 3-4 distinct bullet points using standard HTML (`<ul>`, `<li>`, `<b>`, `<h3>`).
+Do NOT wrap the output in markdown fences like ```html.
 
 Articles:
 {news_text}
@@ -88,15 +87,23 @@ if GROQ_API_KEY:
                 print(f"✅ Success using model: {model_name}")
                 break
             else:
-                print(f"⚠️ Failed with {model_name}: {response.status_code} - {response.text}")
+                print(f"⚠️ Groq API Error ({model_name}): Status {response.status_code} - {response.text}")
         except Exception as err:
-            print(f"⚠️ Request error with {model_name}: {err}")
+            print(f"⚠️ Request exception for {model_name}: {err}")
 
-# Single Card Fallback if API is unavailable
+# Smart Formatted Fallback if API key fails
 if not ai_html_content:
-    print("⚠️ Groq API unavailable. Falling back to structured RSS feed summary.")
-    bullet_items = "".join([f"<li><b>{item.strip('- ')}</b></li>" for item in articles])
-    ai_html_content = f"<h3>Latest Market Headlines</h3><ul>{bullet_items}</ul>"
+    print("⚠️ Groq API failed or key unconfigured. Applying smart editorial layout fallback.")
+    formatted_bullets = []
+    for item in articles[:6]:
+        clean_item = item.strip("- ")
+        formatted_bullets.append(f"<li><b>Market Insight:</b> {clean_item}</li>")
+    
+    ai_html_content = (
+        "<h3>Today's Key Market Takeaways</h3>\n"
+        "<ul>\n" + "\n".join(formatted_bullets) + "\n</ul>\n"
+        "<p><i>Note: Updates refresh automatically every 5 minutes from live market feeds.</i></p>"
+    )
 
 # ==========================================
 # 4. CONSTRUCT HTML PAGE (WITH AUTO-REFRESH)
@@ -110,7 +117,7 @@ full_html = (
     "<head>\n"
     '    <meta charset="UTF-8">\n'
     '    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
-    '    <meta http-equiv="refresh" content="300">\n'  # Auto-refreshes every 5 minutes (300s)
+    '    <meta http-equiv="refresh" content="300">\n'
     "    <title>Live Financial Market Updates</title>\n"
     "    <style>\n"
     "        body {\n"
@@ -120,6 +127,7 @@ full_html = (
     "            padding: 20px;\n"
     "            color: #333;\n"
     "            line-height: 1.6;\n"
+    "            background-color: #fcfcfc;\n"
     "        }\n"
     "        h1 {\n"
     "            color: #0d47a1;\n"
@@ -138,17 +146,17 @@ full_html = (
     "            margin-bottom: 25px;\n"
     "        }\n"
     "        .card {\n"
-    "            background: #f8f9fa;\n"
-    "            border-left: 4px solid #1976d2;\n"
-    "            padding: 20px;\n"
-    "            border-radius: 6px;\n"
-    "            box-shadow: 0 2px 4px rgba(0,0,0,0.05);\n"
+    "            background: #ffffff;\n"
+    "            border-left: 5px solid #1976d2;\n"
+    "            padding: 25px;\n"
+    "            border-radius: 8px;\n"
+    "            box-shadow: 0 4px 12px rgba(0,0,0,0.06);\n"
     "        }\n"
     "        ul {\n"
     "            padding-left: 20px;\n"
     "        }\n"
     "        li {\n"
-    "            margin-bottom: 10px;\n"
+    "            margin-bottom: 12px;\n"
     "        }\n"
     "    </style>\n"
     "</head>\n"
@@ -170,4 +178,4 @@ print("=== Step 4: Writing index.html file ===")
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("✅ Successfully generated index.html with 5-minute auto-refresh!")
+print("✅ Successfully generated index.html!")
