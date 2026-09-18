@@ -15,7 +15,7 @@ if not GROQ_API_KEY:
     print("❌ ERROR: Missing GROQ_API_KEY secret.")
     sys.exit(1)
 
-# Clean leading/trailing spaces or quotes from API Key
+# Clean any spaces or stray quotes around the key
 GROQ_API_KEY = GROQ_API_KEY.strip().strip("'").strip('"')
 
 RAW_RSS_FEEDS = [
@@ -28,7 +28,7 @@ HEADERS = {
 }
 
 def clean_url(url_str):
-    """Strips Markdown link wrappers or extra brackets if copied accidentally."""
+    """Extracts raw HTTP/HTTPS URL from any surrounding Markdown wrapper."""
     match = re.search(r'https?://[^\s\]\)]+', str(url_str))
     return match.group(0) if match else url_str
 
@@ -43,7 +43,7 @@ for feed_url in RSS_FEEDS:
     try:
         resp = requests.get(feed_url, headers=HEADERS, timeout=10)
         feed = feedparser.parse(resp.content)
-        for entry in feed.entries[:5]:  # Get top 5 articles per feed
+        for entry in feed.entries[:5]:  # Top 5 articles per feed
             articles.append(f"- {entry.title}")
     except Exception as e:
         print(f"⚠️ Error fetching feed {feed_url}: {e}")
@@ -78,11 +78,11 @@ groq_headers = {
     "Content-Type": "application/json"
 }
 
-# Fallback sequence across production Groq models
 MODELS_TO_TRY = [
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant"
 ]
+
 ai_html_content = None
 
 for model_name in MODELS_TO_TRY:
@@ -92,22 +92,76 @@ for model_name in MODELS_TO_TRY:
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.5
     }
-    response = requests.post(groq_url, json=payload, headers=groq_headers)
-    if response.status_code == 200:
-        ai_html_content = response.json()["choices"][0]["message"]["content"]
-        print(f"✅ Success using model: {model_name}")
-        break
-    else:
-        print(f"⚠️ Failed with {model_name}: {response.status_code} - {response.text}")
+    try:
+        response = requests.post(groq_url, json=payload, headers=groq_headers, timeout=30)
+        if response.status_code == 200:
+            ai_html_content = response.json()["choices"][0]["message"]["content"]
+            print(f"✅ Success using model: {model_name}")
+            break
+        else:
+            print(f"⚠️ Failed with {model_name}: {response.status_code} - {response.text}")
+    except Exception as err:
+        print(f"⚠️ Request error with {model_name}: {err}")
 
 if not ai_html_content:
     print("❌ Groq API Error: All model attempts failed. Please verify your GROQ_API_KEY in GitHub Repository Secrets.")
     sys.exit(1)
 
 # ==========================================
-# 4. CONSTRUCT HTML PAGE WITH IST TIMESTAMP
+# 4. CONSTRUCT HTML PAGE (SAFE STRING BUILD)
 # ==========================================
 print("=== Step 3: Formatting HTML Page with Live IST Timestamp ===")
 ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%b %d, %Y | %I:%M %p IST")
 
-# Using plain
+HTML_HEAD = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Financial Market Updates</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #0d47a1;
+            margin-bottom: 5px;
+        }
+        .timestamp {
+            color: #666;
+            font-weight: 600;
+            font-size: 0.95em;
+            margin-bottom: 20px;
+        }
+        hr {
+            border: 0;
+            height: 1px;
+            background: #e0e0e0;
+            margin-bottom: 25px;
+        }
+        .card {
+            background: #f8f9fa;
+            border-left: 4px solid #1976d2;
+            padding: 15px 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Global Markets Shift: Forex, India Stocks, Oil, and Crypto Update</h1>
+"""
+
+full_html = (
+    HTML_HEAD
