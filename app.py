@@ -8,14 +8,19 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 # ==========================================
-# 1. CONFIGURATION & RSS SOURCES
+# 1. CATEGORY-SPECIFIC RSS SOURCES
 # ==========================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip().strip("'").strip('"')
 
-RAW_RSS_FEEDS = [
-    "https://news.google.com/rss/search?q=nifty+sensex+bank+nifty+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en",
-    "https://news.google.com/rss/search?q=usd+inr+forex+crypto+commodities+crude+oil&hl=en-IN&gl=IN&ceid=IN:en"
-]
+# Dedicated RSS feeds targeting key market pillars
+CATEGORY_FEEDS = {
+    "Indian Stock Market": "https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en",
+    "US & Global Markets": "https://news.google.com/rss/search?q=nasdaq+sp500+dow+jones+global+markets&hl=en-IN&gl=IN&ceid=IN:en",
+    "Forex": "https://news.google.com/rss/search?q=usd+inr+forex+currency+dollar+index&hl=en-IN&gl=IN&ceid=IN:en",
+    "Crude Oil & Commodities": "https://news.google.com/rss/search?q=crude+oil+gold+price+commodities&hl=en-IN&gl=IN&ceid=IN:en",
+    "Crypto (BTC, ETH, SOL)": "https://news.google.com/rss/search?q=bitcoin+ethereum+solana+crypto+market&hl=en-IN&gl=IN&ceid=IN:en",
+    "Global Macro Impact": "https://news.google.com/rss/search?q=fed+rbi+interest+rates+inflation+economy&hl=en-IN&gl=IN&ceid=IN:en"
+}
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -25,49 +30,49 @@ def clean_url(url_str):
     match = re.search(r'https?://[^\s\]\)]+', str(url_str))
     return match.group(0) if match else url_str
 
-RSS_FEEDS = [clean_url(u) for u in RAW_RSS_FEEDS]
-
 # ==========================================
-# 2. INGEST & FILTER (KEEP ONLY LAST 48 HOURS)
+# 2. INGEST & FILTER (48-HOUR DATA PURGE)
 # ==========================================
-print("=== Step 1: Ingesting Live Market Feeds (48-Hour Filter Active) ===")
+print("=== Step 1: Ingesting Categorized Market Feeds (48-Hour Filter) ===")
 now_utc = datetime.now(timezone.utc)
 cutoff_48h = now_utc - timedelta(hours=48)
 
-fresh_articles = []
+categorized_headlines = []
+all_raw_headlines = []
 
-for feed_url in RSS_FEEDS:
+for cat, feed_url in CATEGORY_FEEDS.items():
     try:
-        resp = requests.get(feed_url, headers=HEADERS, timeout=10)
+        resp = requests.get(clean_url(feed_url), headers=HEADERS, timeout=10)
         feed = feedparser.parse(resp.content)
-        for entry in feed.entries:
+        for entry in feed.entries[:2]:  # Top 2 fresh entries per category
             published_tuple = entry.get("published_parsed")
             if published_tuple:
                 entry_dt = datetime.fromtimestamp(time.mktime(published_tuple), tz=timezone.utc)
                 if entry_dt < cutoff_48h:
-                    continue  # Purge old data > 48h
+                    continue  # Purge old items > 48 hours
             
             clean_title = re.sub(r'\s*-\s*[^-]+$', '', entry.title)
-            fresh_articles.append(clean_title)
+            categorized_headlines.append(f"[{cat}]: {clean_title}")
+            all_raw_headlines.append(clean_title)
     except Exception as e:
-        print(f"⚠️ Error fetching feed {feed_url}: {e}")
+        print(f"⚠️ Error fetching {cat}: {e}")
 
 seen = set()
-unique_articles = [a for a in fresh_articles if not (a in seen or seen.add(a))]
+unique_articles = [a for a in all_raw_headlines if not (a in seen or seen.add(a))]
 
 if not unique_articles:
     unique_articles = [
-        "Nifty holds key support level around 23,200 while Sensex remains steady.",
-        "Bank Nifty shows resilience led by private banking sector buying.",
-        "Crude oil prices ease slightly, providing positive relief for Indian markets."
+        "Nifty holds key support levels as domestic institutions support market momentum.",
+        "US stocks remain firm while crude oil prices stabilize globally.",
+        "Bitcoin and Ethereum trade in steady ranges alongside Rupee recovery."
     ]
 
-news_text = "\n".join([f"- {title}" for title in unique_articles[:8]])
+news_text = "\n".join(categorized_headlines[:10])
 
 # ==========================================
-# 3. PARSE & CALCULATE INDEX PIVOT POINTS
+# 3. CALCULATE PIVOT POINTS
 # ==========================================
-print("=== Step 2: Calculating Daily Pivot Points ===")
+print("=== Step 2: Calculating Daily Pivot Levels ===")
 
 def extract_pivot_levels(text_data):
     pivots = {
@@ -75,7 +80,6 @@ def extract_pivot_levels(text_data):
         "Bank Nifty": {"P": 49800, "S1": 49550, "R1": 50050},
         "Sensex": {"P": 76500, "S1": 76200, "R1": 76800}
     }
-    
     for headline in text_data:
         nifty_match = re.search(r'nifty\b.*?\b(\d{2},\d{3}|\d{5})\b', headline, re.IGNORECASE)
         if nifty_match:
@@ -86,25 +90,24 @@ def extract_pivot_levels(text_data):
         if bn_match:
             val = float(bn_match.group(1).replace(",", ""))
             pivots["Bank Nifty"] = {"P": int(val), "S1": int(val - 250), "R1": int(val + 250)}
-
     return pivots
 
 pivot_data = extract_pivot_levels(unique_articles)
 
 # ==========================================
-# 4. REWRITE BRIEFING VIA GROQ (<100 WORDS)
+# 4. REWRITE IN LAYMAN TERMS (<100 WORDS)
 # ==========================================
-print("=== Step 3: Generating Morning Market Briefing ===")
+print("=== Step 3: Generating 100-Word Layman Rewrite ===")
 
 prompt = f"""
-Summarize the last 24 hours of market events into a morning 7:00 AM IST pre-market briefing.
-Determine the overall daily market bias (Bullish, Bearish, or Neutral).
+Summarize the following categorized market updates for a beginner reader in simple layman terms.
+Cover: Indian Stocks, US Markets, Forex (USD/INR), Oil/Commodities, Crypto, and Global Macro impact.
 
 CRITICAL RULES:
-1. Entire text MUST BE UNDER 100 WORDS TOTAL.
-2. Written in super simple layman's terms.
-3. Output clean HTML body content using standard tags (`<p>`, `<ul>`, `<li>`, `<b>`).
-4. Do NOT output markdown code fences like ```html.
+1. Entire response MUST BE STRICTLY UNDER 100 WORDS TOTAL.
+2. Use plain, easy-to-understand English without jargon.
+3. Output clean HTML body content using bullet points (`<ul>`, `<li>`) and bold text (`<b>`).
+4. Do NOT output markdown code blocks like ```html.
 
 Articles:
 {news_text}
@@ -130,22 +133,22 @@ if GROQ_API_KEY:
             if response.status_code == 200:
                 ai_html_content = response.json()["choices"][0]["message"]["content"]
                 ai_html_content = re.sub(r'```html|```', '', ai_html_content).strip()
-                print(f"✅ AI Morning Briefing generated via Groq ({model_name})")
+                print(f"✅ Layman summary generated via Groq ({model_name})")
                 break
         except Exception as e:
             print(f"⚠️ Groq attempt failed: {e}")
 
 if not ai_html_content:
     ai_html_content = (
-        "<p><b>Market Bias: Moderately Bullish</b></p>\n"
         "<ul>\n"
-        "<li><b>Morning Insight:</b> Benchmarks closed on a positive note as domestic institutional buying offset global rate concerns.</li>\n"
-        "<li><b>Key Drivers:</b> Easing crude oil prices and a stabilizing Rupee provide support for morning momentum.</li>\n"
+        "<li><b>Indian Stocks & Global Cues:</b> Nifty and Sensex hold firm support as positive buying offsets mixed US market signals.</li>\n"
+        "<li><b>Forex & Commodities:</b> The Rupee remains stable against the USD while easing crude oil prices offer relief to import sectors.</li>\n"
+        "<li><b>Crypto & Macro:</b> Top coins like Bitcoin and Ethereum hold key ranges as investors track upcoming central bank policy decisions.</li>\n"
         "</ul>"
     )
 
 # ==========================================
-# 5. BUILD PIVOT TABLE HTML
+# 5. CONSTRUCT PIVOT TABLE HTML
 # ==========================================
 pivot_table_html = """
 <div class="pivot-section">
@@ -179,14 +182,14 @@ pivot_table_html += """
 """
 
 # ==========================================
-# 6. BUILD 48-HOUR NEWS LIST HTML
+# 6. CONSTRUCT 48-HOUR LIVE FEED
 # ==========================================
-news_bullets_html = "".join([f"<li><b>Market Update:</b> {title}</li>" for title in unique_articles[:6]])
+news_bullets_html = "".join([f"<li><b>Market Update:</b> {title}</li>" for title in unique_articles[:8]])
 
 # ==========================================
-# 7. CONSTRUCT HTML PAGE (LIVE FEEDS TOP FIRST)
+# 7. CONSTRUCT FULL HTML
 # ==========================================
-print("=== Step 4: Formatting HTML Page ===")
+print("=== Step 4: Building HTML Page ===")
 ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%b %d, %Y | %I:%M %p IST")
 
 full_html = (
@@ -196,7 +199,7 @@ full_html = (
     '    <meta charset="UTF-8">\n'
     '    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
     '    <meta http-equiv="refresh" content="300">\n'
-    "    <title>Live Market Feeds & Pre-Market Briefing</title>\n"
+    "    <title>Live Market Feed & Pre-Market Briefing</title>\n"
     "    <style>\n"
     "        body {\n"
     "            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n"
@@ -236,7 +239,7 @@ full_html = (
     "        }\n"
     "        .card {\n"
     "            background: #ffffff;\n"
-    "            border-left: 5px solid #388e3c;\n"
+    "            border-left: 5px solid #2e7d32;\n"
     "            padding: 20px 25px;\n"
     "            border-radius: 6px;\n"
     "            box-shadow: 0 2px 8px rgba(0,0,0,0.05);\n"
@@ -283,9 +286,9 @@ full_html = (
     "    </style>\n"
     "</head>\n"
     "<body>\n"
-    "    <h1>Live Market Updates & Pre-Market Briefing</h1>\n"
+    "    <h1>Daily Pre-Market Briefing & Updates</h1>\n"
     f'    <div class="timestamp">🕒 Last Updated: {ist_time}</div>\n'
-    '    <div class="badge">⚡ 48-Hour Live Auto-Cleaned Data</div>\n'
+    '    <div class="badge">⚡ 48-Hour Live Auto-Cleaned Feed</div>\n'
     "    <hr>\n"
     '    <div class="card">\n'
     '        <h3 style="margin-top:0; color:#2e7d32;">📰 48-Hour Live Market Feed</h3>\n'
@@ -303,7 +306,7 @@ full_html = (
 )
 
 # ==========================================
-# 8. WRITE DIRECTLY TO index.html
+# 8. WRITE TO index.html
 # ==========================================
 print("=== Step 5: Writing index.html file ===")
 with open("index.html", "w", encoding="utf-8") as f:
