@@ -113,13 +113,8 @@ if not ai_html_content:
     blocks = []
     for idx, cat in enumerate(categories):
         headline = articles[idx % len(articles)].replace("- ", "")
-        blocks.append(f"""
-        <div class="block">
-            <h3>{idx+1}. {cat}</h3>
-            <p>{headline}</p>
-        </div>
-        """)
-    ai_html_content = "".join(blocks)
+        blocks.append(f'<div class="block"><h3>{idx+1}. {cat}</h3><p>{headline}</p></div>')
+    ai_html_content = "\n".join(blocks)
 
 # ==========================================
 # 4. CONSTRUCT HTML PAGE (GRID LAYOUT)
@@ -127,13 +122,80 @@ if not ai_html_content:
 print("=== Step 3: Formatting HTML Page with Live IST Timestamp ===")
 ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%b %d, %Y | %I:%M %p IST")
 
-full_html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Market Snapshot</title>
-    <style>
-        body {{
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            max-width: 900
+full_html = (
+    "<!DOCTYPE html>\n"
+    '<html lang="en">\n'
+    "<head>\n"
+    '    <meta charset="UTF-8">\n'
+    '    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+    "    <title>Daily Market Snapshot</title>\n"
+    "    <style>\n"
+    "        body {\n"
+    "            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;\n"
+    "            max-width: 900px;\n"
+    "            margin: 40px auto;\n"
+    "            padding: 20px;\n"
+    "            color: #333;\n"
+    "            line-height: 1.5;\n"
+    "            background-color: #f4f6f9;\n"
+    "        }\n"
+    "        h1 {\n"
+    "            color: #0d47a1;\n"
+    "            margin-bottom: 5px;\n"
+    "        }\n"
+    "        .timestamp {\n"
+    "            color: #666;\n"
+    "            font-weight: 600;\n"
+    "            font-size: 0.95em;\n"
+    "            margin-bottom: 20px;\n"
+    "        }\n"
+    "        hr {\n"
+    "            border: 0;\n"
+    "            height: 1px;\n"
+    "            background: #e0e0e0;\n"
+    "            margin-bottom: 25px;\n"
+    "        }\n"
+    "        .grid-container {\n"
+    "            display: grid;\n"
+    "            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));\n"
+    "            gap: 15px;\n"
+    "        }\n"
+    "        .block {\n"
+    "            background: #ffffff;\n"
+    "            border-left: 4px solid #1976d2;\n"
+    "            padding: 15px;\n"
+    "            border-radius: 6px;\n"
+    "            box-shadow: 0 2px 5px rgba(0,0,0,0.05);\n"
+    "        }\n"
+    "        .block h3 {\n"
+    "            margin-top: 0;\n"
+    "            margin-bottom: 8px;\n"
+    "            color: #0d47a1;\n"
+    "            font-size: 1.05em;\n"
+    "        }\n"
+    "        .block p {\n"
+    "            margin: 0;\n"
+    "            font-size: 0.92em;\n"
+    "            color: #444;\n"
+    "        }\n"
+    "    </style>\n"
+    "</head>\n"
+    "<body>\n"
+    "    <h1>Daily Market Snapshot</h1>\n"
+    f'    <div class="timestamp">🕒 Last Updated: {ist_time}</div>\n'
+    "    <hr>\n"
+    '    <div class="grid-container">\n'
+    f"        {ai_html_content}\n"
+    "    </div>\n"
+    "</body>\n"
+    "</html>"
+)
+
+# ==========================================
+# 5. WRITE DIRECTLY TO index.html FILE
+# ==========================================
+print("=== Step 4: Writing index.html file ===")
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(full_html)
+
+print("✅ Successfully generated index.html!")
