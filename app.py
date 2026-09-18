@@ -19,7 +19,7 @@ else:
 
 RAW_RSS_FEEDS = [
     "https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en",
-    "https://news.google.com/rss/search?q=usd+inr+forex+crypto+commodities&hl=en-IN&gl=IN&ceid=IN:en"
+    "https://news.google.com/rss/search?q=usd+inr+forex+crypto+commodities+crude+oil&hl=en-IN&gl=IN&ceid=IN:en"
 ]
 
 HEADERS = {
@@ -56,13 +56,23 @@ news_text = "\n".join(articles)
 print(f"Total articles gathered: {len(articles)}")
 
 # ==========================================
-# 3. GENERATE AI SUMMARY VIA GROQ (WITH FALLBACK)
+# 3. GENERATE AI SUMMARY VIA GROQ (6 SECTIONS, MAX 100 WORDS)
 # ==========================================
 print("=== Step 2: Generating Market Summary ===")
 prompt = f"""
-You are a top financial journalist. Summarize the following news articles into structured market updates.
-Return ONLY clean HTML body content using bullet points (`<ul>`, `<li>`), `<h3>` subheadings, and bold tags (`<b>`). 
-Do not include Markdown block quotes like ```html or <html><body> wrappers.
+You are a financial journalist. Explain these news articles in super simple layman's terms.
+Organize the update into EXACTLY 6 short sections with bold subheadings:
+1. <b>Indian Stock Market</b>
+2. <b>Global Markets</b>
+3. <b>Forex</b>
+4. <b>Crypto</b>
+5. <b>Crude & Commodities</b>
+6. <b>Economy & Inflation</b>
+
+CRITICAL RULES:
+- The ENTIRE summary must be MAX 100 WORDS TOTAL. Be extremely brief (1 short sentence per section).
+- Return ONLY clean HTML content inside `<div>` blocks or `<p>` tags. 
+- Do NOT include Markdown block quotes like ```html or <html><body> wrappers.
 
 Articles:
 {news_text}
@@ -89,7 +99,7 @@ if GROQ_API_KEY:
         payload = {
             "model": model_name,
             "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.5
+            "temperature": 0.3
         }
         try:
             response = requests.post(groq_url, json=payload, headers=groq_headers, timeout=30)
@@ -105,11 +115,11 @@ if GROQ_API_KEY:
 # Fail-safe RSS Fallback if Groq API fails or key is missing
 if not ai_html_content:
     print("⚠️ Groq API unavailable/unauthorized. Falling back to live RSS feed headlines.")
-    bullet_items = "".join([f"<li><b>{item.strip('- ')}</b></li>" for item in articles])
+    bullet_items = "".join([f"<li><b>{item.strip('- ')}</b></li>" for item in articles[:6]])
     ai_html_content = f"<h3>Latest Live Market Headlines</h3><ul>{bullet_items}</ul>"
 
 # ==========================================
-# 4. CONSTRUCT HTML PAGE
+# 4. CONSTRUCT HTML PAGE WITH MODERN GRID CARDS
 # ==========================================
 print("=== Step 3: Formatting HTML Page with Live IST Timestamp ===")
 ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%b %d, %Y | %I:%M %p IST")
@@ -148,20 +158,22 @@ full_html = f"""<!DOCTYPE html>
         .card {{
             background: #f8f9fa;
             border-left: 4px solid #1976d2;
-            padding: 15px 20px;
-            border-radius: 4px;
+            padding: 20px;
+            border-radius: 6px;
             margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }}
-        ul {{
-            padding-left: 20px;
+        .card p, .card div {{
+            margin-bottom: 12px;
         }}
-        li {{
-            margin-bottom: 8px;
+        b {{
+            color: #0d47a1;
+            display: inline-block;
         }}
     </style>
 </head>
 <body>
-    <h1>Global Markets Shift: Forex, India Stocks, Oil, and Crypto Update</h1>
+    <h1>Daily Market Snapshot</h1>
     <div class="timestamp">🕒 Last Updated: {ist_time}</div>
     <hr>
     <div class="card">
@@ -177,4 +189,4 @@ print("=== Step 4: Writing index.html file ===")
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("✅ Successfully generated index.html!")
+print
