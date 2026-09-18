@@ -10,11 +10,11 @@ from github import Github
 # 1. SETUP & SECRETS VALIDATION
 # ==========================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN") or os.getenv("GH_PAT")
 GITHUB_REPO = os.getenv("GITHUB_REPO")
 
 if not GROQ_API_KEY or not GITHUB_TOKEN or not GITHUB_REPO:
-    print("❌ ERROR: Missing required environment secrets (GROQ_API_KEY, GITHUB_TOKEN, GITHUB_REPO).")
+    print("❌ ERROR: Missing required environment secrets (GROQ_API_KEY, GITHUB_TOKEN/GH_PAT, GITHUB_REPO).")
     sys.exit(1)
 
 # RSS Feeds for Financial Market Updates
@@ -68,10 +68,9 @@ if response.status_code != 200:
 ai_html_content = response.json()["choices"][0]["message"]["content"]
 
 # ==========================================
-# 4. CONSTRUCT COMPLETE HTML PAGE WITH TIMESTAMP
+# 4. CONSTRUCT COMPLETE HTML PAGE WITH IST TIMESTAMP
 # ==========================================
 print("=== Step 3: Formatting HTML Page with Live IST Timestamp ===")
-# Fetch current time in Indian Standard Time (IST)
 ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%b %d, %Y | %I:%M %p IST")
 
 full_html = f"""<!DOCTYPE html>
@@ -142,7 +141,6 @@ file_path = "index.html"
 commit_message = f"Auto-update market report: {ist_time}"
 
 try:
-    # Update existing file
     contents = repo.get_contents(file_path, ref="main")
     repo.update_file(
         path=contents.path,
@@ -152,7 +150,6 @@ try:
         branch="main"
     )
 except Exception:
-    # Create file if it doesn't exist
     repo.create_file(
         path=file_path,
         message=commit_message,
