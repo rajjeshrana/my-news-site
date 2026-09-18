@@ -30,7 +30,6 @@ def clean_url(url_str):
     match = re.search(r'https?://[^\s\]\)]+', str(url_str))
     return match.group(0) if match else url_str
 
-# Clean feed URLs
 RSS_FEEDS = [clean_url(u) for u in RAW_RSS_FEEDS]
 
 # ==========================================
@@ -85,37 +84,3 @@ payload = {
 response = requests.post(groq_url, json=payload, headers=groq_headers)
 if response.status_code != 200:
     print(f"❌ Groq API Error: {response.status_code} - {response.text}")
-    sys.exit(1)
-
-ai_html_content = response.json()["choices"][0]["message"]["content"]
-
-# ==========================================
-# 4. CONSTRUCT COMPLETE HTML PAGE WITH IST TIMESTAMP
-# ==========================================
-print("=== Step 3: Formatting HTML Page with Live IST Timestamp ===")
-ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%b %d, %Y | %I:%M %p IST")
-
-full_html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Financial Market Updates</title>
-    <style>
-        body {{
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 20px;
-            color: #333;
-            line-height: 1.6;
-        }}
-        h1 {{
-            color: #0d47a1;
-            margin-bottom: 5px;
-        }}
-        .timestamp {{
-            color: #666;
-            font-weight: 600;
-            font-size: 0.95em;
-            margin-bottom: 20px;
