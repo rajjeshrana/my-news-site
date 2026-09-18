@@ -12,10 +12,10 @@ from zoneinfo import ZoneInfo
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 if not GROQ_API_KEY:
-    print("❌ ERROR: Missing GROQ_API_KEY secret.")
-    sys.exit(1)
-
-GROQ_API_KEY = GROQ_API_KEY.strip().strip("'").strip('"')
+    print("⚠️ WARNING: Missing GROQ_API_KEY secret. Will use direct RSS mode.")
+    GROQ_API_KEY = ""
+else:
+    GROQ_API_KEY = GROQ_API_KEY.strip().strip("'").strip('"')
 
 RAW_RSS_FEEDS = [
     "https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en",
@@ -56,9 +56,9 @@ news_text = "\n".join(articles)
 print(f"Total articles gathered: {len(articles)}")
 
 # ==========================================
-# 3. GENERATE AI SUMMARY VIA GROQ
+# 3. GENERATE AI SUMMARY VIA GROQ (WITH FALLBACK)
 # ==========================================
-print("=== Step 2: Generating Market Summary with Groq AI ===")
+print("=== Step 2: Generating Market Summary ===")
 prompt = f"""
 You are a top financial journalist. Summarize the following news articles into structured market updates.
 Return ONLY clean HTML body content using bullet points (`<ul>`, `<li>`), `<h3>` subheadings, and bold tags (`<b>`). 
@@ -83,27 +83,30 @@ MODELS_TO_TRY = [
 
 ai_html_content = None
 
-for model_name in MODELS_TO_TRY:
-    print(f"Attempting Groq completion with model: {model_name}")
-    payload = {
-        "model": model_name,
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.5
-    }
-    try:
-        response = requests.post(groq_url, json=payload, headers=groq_headers, timeout=30)
-        if response.status_code == 200:
-            ai_html_content = response.json()["choices"][0]["message"]["content"]
-            print(f"✅ Success using model: {model_name}")
-            break
-        else:
-            print(f"⚠️ Failed with {model_name}: {response.status_code} - {response.text}")
-    except Exception as err:
-        print(f"⚠️ Request error with {model_name}: {err}")
+if GROQ_API_KEY:
+    for model_name in MODELS_TO_TRY:
+        print(f"Attempting Groq completion with model: {model_name}")
+        payload = {
+            "model": model_name,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.5
+        }
+        try:
+            response = requests.post(groq_url, json=payload, headers=groq_headers, timeout=30)
+            if response.status_code == 200:
+                ai_html_content = response.json()["choices"][0]["message"]["content"]
+                print(f"✅ Success using model: {model_name}")
+                break
+            else:
+                print(f"⚠️ Failed with {model_name}: {response.status_code} - {response.text}")
+        except Exception as err:
+            print(f"⚠️ Request error with {model_name}: {err}")
 
+# Fail-safe RSS Fallback if Groq API fails or key is missing
 if not ai_html_content:
-    print("❌ Groq API Error: All model attempts failed. Please verify your GROQ_API_KEY in GitHub Repository Secrets.")
-    sys.exit(1)
+    print("⚠️ Groq API unavailable/unauthorized. Falling back to live RSS feed headlines.")
+    bullet_items = "".join([f"<li><b>{item.strip('- ')}</b></li>" for item in articles])
+    ai_html_content = f"<h3>Latest Live Market Headlines</h3><ul>{bullet_items}</ul>"
 
 # ==========================================
 # 4. CONSTRUCT HTML PAGE
