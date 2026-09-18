@@ -74,19 +74,28 @@ groq_headers = {
     "Content-Type": "application/json"
 }
 
-# Active flagship production model on Groq
-payload = {
-    "model": "llama-3.3-70b-versatile",
-    "messages": [{"role": "user", "content": prompt}],
-    "temperature": 0.5
-}
+# Fallback models list in case one endpoint is unavailable
+MODELS_TO_TRY = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "mixtral-8x7b-32768"]
+ai_html_content = None
 
-response = requests.post(groq_url, json=payload, headers=groq_headers)
-if response.status_code != 200:
-    print(f"❌ Groq API Error: {response.status_code} - {response.text}")
+for model_name in MODELS_TO_TRY:
+    print(f"Attempting Groq completion with model: {model_name}")
+    payload = {
+        "model": model_name,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.5
+    }
+    response = requests.post(groq_url, json=payload, headers=groq_headers)
+    if response.status_code == 200:
+        ai_html_content = response.json()["choices"][0]["message"]["content"]
+        print(f"✅ Success using model: {model_name}")
+        break
+    else:
+        print(f"⚠️ Failed with {model_name}: {response.status_code} - {response.text}")
+
+if not ai_html_content:
+    print("❌ Groq API Error: All model attempts failed.")
     sys.exit(1)
-
-ai_html_content = response.json()["choices"][0]["message"]["content"]
 
 # ==========================================
 # 4. CONSTRUCT HTML PAGE WITH IST TIMESTAMP
