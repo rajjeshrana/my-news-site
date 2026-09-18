@@ -10,11 +10,11 @@ from github import Github
 # 1. SETUP & SECRETS VALIDATION
 # ==========================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN") or os.getenv("GH_PAT")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_REPO = os.getenv("GITHUB_REPO")
 
 if not GROQ_API_KEY or not GITHUB_TOKEN or not GITHUB_REPO:
-    print("❌ ERROR: Missing required environment secrets (GROQ_API_KEY, GITHUB_TOKEN/GH_PAT, GITHUB_REPO).")
+    print("❌ ERROR: Missing required environment variables.")
     sys.exit(1)
 
 # RSS Feeds for Financial Market Updates
