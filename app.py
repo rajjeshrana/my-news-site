@@ -7,13 +7,16 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 # ==========================================
-# 1. SECRETS VALIDATION
+# 1. SECRETS VALIDATION & CLEANING
 # ==========================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 if not GROQ_API_KEY:
     print("❌ ERROR: Missing GROQ_API_KEY secret.")
     sys.exit(1)
+
+# Clean leading/trailing spaces or quotes from API Key
+GROQ_API_KEY = GROQ_API_KEY.strip().strip("'").strip('"')
 
 RAW_RSS_FEEDS = [
     "https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en",
@@ -75,12 +78,10 @@ groq_headers = {
     "Content-Type": "application/json"
 }
 
-# Expanded fallback sequence across Groq production models
+# Fallback sequence across production Groq models
 MODELS_TO_TRY = [
     "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "qwen-2.5-coder-32b",
-    "deepseek-r1-distill-llama-70b"
+    "llama-3.1-8b-instant"
 ]
 ai_html_content = None
 
@@ -100,7 +101,7 @@ for model_name in MODELS_TO_TRY:
         print(f"⚠️ Failed with {model_name}: {response.status_code} - {response.text}")
 
 if not ai_html_content:
-    print("❌ Groq API Error: All model attempts failed. Please verify GROQ_API_KEY secret.")
+    print("❌ Groq API Error: All model attempts failed. Please verify your GROQ_API_KEY in GitHub Repository Secrets.")
     sys.exit(1)
 
 # ==========================================
@@ -109,52 +110,4 @@ if not ai_html_content:
 print("=== Step 3: Formatting HTML Page with Live IST Timestamp ===")
 ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%b %d, %Y | %I:%M %p IST")
 
-html_template = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Financial Market Updates</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 20px;
-            color: #333;
-            line-height: 1.6;
-        }
-        h1 {
-            color: #0d47a1;
-            margin-bottom: 5px;
-        }
-        .timestamp {
-            color: #666;
-            font-weight: 600;
-            font-size: 0.95em;
-            margin-bottom: 20px;
-        }
-        hr {
-            border: 0;
-            height: 1px;
-            background: #e0e0e0;
-            margin-bottom: 25px;
-        }
-        .card {
-            background: #f8f9fa;
-            border-left: 4px solid #1976d2;
-            padding: 15px 20px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-        ul {
-            padding-left: 20px;
-        }
-        li {
-            margin-bottom: 8px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Global Markets Shift: Forex, India Stocks, Oil, and Crypto Update</h1>
-    <div class="timestamp">🕒 Last Updated: {TIMESTAMP}</div>
+# Using plain
