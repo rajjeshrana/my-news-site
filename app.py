@@ -75,8 +75,13 @@ groq_headers = {
     "Content-Type": "application/json"
 }
 
-# Fallback sequence across Groq production models
-MODELS_TO_TRY = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
+# Expanded fallback sequence across Groq production models
+MODELS_TO_TRY = [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant",
+    "qwen-2.5-coder-32b",
+    "deepseek-r1-distill-llama-70b"
+]
 ai_html_content = None
 
 for model_name in MODELS_TO_TRY:
@@ -153,21 +158,3 @@ html_template = """<!DOCTYPE html>
 <body>
     <h1>Global Markets Shift: Forex, India Stocks, Oil, and Crypto Update</h1>
     <div class="timestamp">🕒 Last Updated: {TIMESTAMP}</div>
-    <hr>
-    <div class="card">
-        {CONTENT}
-    </div>
-</body>
-</html>
-"""
-
-full_html = html_template.replace("{TIMESTAMP}", ist_time).replace("{CONTENT}", ai_html_content)
-
-# ==========================================
-# 5. WRITE DIRECTLY TO index.html FILE
-# ==========================================
-print("=== Step 4: Writing index.html file ===")
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(full_html)
-
-print("✅ Successfully generated index.html!")
