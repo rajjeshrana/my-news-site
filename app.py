@@ -288,12 +288,12 @@ full_html = (
     '    <div class="badge">☀️ Morning Briefing Scheduled @ 7:00 AM IST</div>\n'
     "    <hr>\n"
     '    <div class="card">\n'
-    '        <h3 style="margin-top:0; color:#0d47a1;">☕ Morning 7 AM Pre-Market Briefing (<100 Words)</h3>\n'
+    '        <h3 style="margin-top:0; color:#0d47a1;">☕ Morning 7 AM Pre-Market Briefing (&lt;100 Words)</h3>\n'
     f"        {ai_html_content}\n"
     "    </div>\n"
     f"    {pivot_table_html}\n"
     '    <div class="card" style="border-left-color: #388e3c;">\n'
-    '        <h3 style="margin-top:0; color:#2e7d32;">📰 48-Hour Live Market Feed</h3>\n"
+    '        <h3 style="margin-top:0; color:#2e7d32;">📰 48-Hour Live Market Feed</h3>\n'
     "        <ul>\n"
     f"            {news_bullets_html}\n"
     "        </ul>\n"
