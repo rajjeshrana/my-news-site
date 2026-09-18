@@ -2,9 +2,13 @@ name: Live Financial News Automation
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '30 1 * * *'  # Runs daily at 1:30 AM UTC (7:00 AM IST)
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   run-pipeline:
@@ -35,5 +39,13 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Auto-update live market report [skip ci]" || exit 0
+          git commit -m "Morning Pre-Market Briefing & Live Update [skip ci]" || exit 0
           git push
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

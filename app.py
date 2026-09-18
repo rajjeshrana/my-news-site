@@ -70,16 +70,12 @@ news_text = "\n".join([f"- {title}" for title in unique_articles[:8]])
 print("=== Step 2: Calculating Daily Pivot Points ===")
 
 def extract_pivot_levels(text_data):
-    """Parses index levels or computes estimated pivots for Nifty, Bank Nifty, and Sensex."""
-    # Classic Pivot Formula: Pivot (P) = (H + L + C) / 3
-    # Support 1 (S1) = (2 * P) - H | Resistance 1 (R1) = (2 * P) - L
     pivots = {
-        "Nifty 50": {"P": 23200, "S1": 23110, "R1": 23290},
+        "Nifty 50": {"P": 23300, "S1": 23210, "R1": 23390},
         "Bank Nifty": {"P": 49800, "S1": 49550, "R1": 50050},
         "Sensex": {"P": 76500, "S1": 76200, "R1": 76800}
     }
     
-    # Extract numbers associated with indices if present in news headlines
     for headline in text_data:
         nifty_match = re.search(r'nifty\b.*?\b(\d{2},\d{3}|\d{5})\b', headline, re.IGNORECASE)
         if nifty_match:
@@ -96,16 +92,16 @@ def extract_pivot_levels(text_data):
 pivot_data = extract_pivot_levels(unique_articles)
 
 # ==========================================
-# 4. REWRITE IN LAYMAN'S TERMS & MARKET BIAS (<100 WORDS)
+# 4. REWRITE BRIEFING VIA GROQ (<100 WORDS)
 # ==========================================
-print("=== Step 3: Generating Market Bias & Briefing ===")
+print("=== Step 3: Generating Morning 7 AM Market Briefing ===")
 
 prompt = f"""
-Summarize the last 24 hours of market events into a morning pre-market briefing.
+Summarize the last 24 hours of market events into a morning 7:00 AM IST pre-market briefing.
 Determine the overall daily market bias (Bullish, Bearish, or Neutral).
 
 CRITICAL RULES:
-1. Entire text MUST BE UNDER 100 WORDS.
+1. Entire text MUST BE UNDER 100 WORDS TOTAL.
 2. Written in super simple layman's terms.
 3. Output clean HTML body content using standard tags (`<p>`, `<ul>`, `<li>`, `<b>`).
 4. Do NOT output markdown code fences like ```html.
@@ -134,7 +130,7 @@ if GROQ_API_KEY:
             if response.status_code == 200:
                 ai_html_content = response.json()["choices"][0]["message"]["content"]
                 ai_html_content = re.sub(r'```html|```', '', ai_html_content).strip()
-                print(f"✅ AI Market Briefing successful via Groq ({model_name})")
+                print(f"✅ AI Morning Briefing generated via Groq ({model_name})")
                 break
         except Exception as e:
             print(f"⚠️ Groq attempt failed: {e}")
@@ -143,7 +139,7 @@ if not ai_html_content:
     ai_html_content = (
         "<p><b>Market Bias: Moderately Bullish</b></p>\n"
         "<ul>\n"
-        "<li><b>24H Highlights:</b> Benchmarks closed on a positive note as domestic institutional buying offset global rate concerns.</li>\n"
+        "<li><b>Morning Insight:</b> Benchmarks closed on a positive note as domestic institutional buying offset global rate concerns.</li>\n"
         "<li><b>Key Drivers:</b> Easing crude oil prices and a stabilizing Rupee provide support for morning momentum.</li>\n"
         "</ul>"
     )
@@ -153,7 +149,7 @@ if not ai_html_content:
 # ==========================================
 pivot_table_html = """
 <div class="pivot-section">
-    <h3>📌 Key Daily Pivot Levels</h3>
+    <h3>📌 Daily Pivot Levels</h3>
     <table class="pivot-table">
         <thead>
             <tr>
@@ -183,7 +179,12 @@ pivot_table_html += """
 """
 
 # ==========================================
-# 6. CONSTRUCT HTML PAGE (LIGHTWEIGHT & AUTOREFRESH)
+# 6. BUILD 48-HOUR NEWS LIST HTML
+# ==========================================
+news_bullets_html = "".join([f"<li><b>Market Update:</b> {title}</li>" for title in unique_articles[:6]])
+
+# ==========================================
+# 7. CONSTRUCT HTML PAGE
 # ==========================================
 print("=== Step 4: Formatting HTML Page ===")
 ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%b %d, %Y | %I:%M %p IST")
@@ -195,7 +196,7 @@ full_html = (
     '    <meta charset="UTF-8">\n'
     '    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
     '    <meta http-equiv="refresh" content="300">\n'
-    "    <title>Daily Pre-Market Briefing</title>\n"
+    "    <title>Morning Briefing & Live Market Updates</title>\n"
     "    <style>\n"
     "        body {\n"
     "            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n"
@@ -246,6 +247,7 @@ full_html = (
     "            padding: 20px;\n"
     "            border-radius: 6px;\n"
     "            box-shadow: 0 2px 8px rgba(0,0,0,0.05);\n"
+    "            margin-bottom: 20px;\n"
     "        }\n"
     "        .pivot-section h3 {\n"
     "            margin-top: 0;\n"
@@ -276,26 +278,32 @@ full_html = (
     "        }\n"
     "        li {\n"
     "            margin-bottom: 8px;\n"
-    "            font-size: 0.98em;\n"
+    "            font-size: 0.95em;\n"
     "        }\n"
     "    </style>\n"
     "</head>\n"
     "<body>\n"
-    "    <h1>Pre-Market Briefing & Bias</h1>\n"
+    "    <h1>Daily Pre-Market Briefing & Updates</h1>\n"
     f'    <div class="timestamp">🕒 Last Updated: {ist_time}</div>\n'
-    '    <div class="badge">⚡ 24H Briefing & 48H Auto-Cleaned</div>\n'
+    '    <div class="badge">☀️ Morning Briefing Scheduled @ 7:00 AM IST</div>\n'
     "    <hr>\n"
     '    <div class="card">\n'
-    '        <h3 style="margin-top:0; color:#0d47a1;">📊 24-Hour Market Summary</h3>\n'
+    '        <h3 style="margin-top:0; color:#0d47a1;">☕ Morning 7 AM Pre-Market Briefing (<100 Words)</h3>\n'
     f"        {ai_html_content}\n"
     "    </div>\n"
     f"    {pivot_table_html}\n"
+    '    <div class="card" style="border-left-color: #388e3c;">\n'
+    '        <h3 style="margin-top:0; color:#2e7d32;">📰 48-Hour Live Market Feed</h3>\n"
+    "        <ul>\n"
+    f"            {news_bullets_html}\n"
+    "        </ul>\n"
+    "    </div>\n"
     "</body>\n"
     "</html>"
 )
 
 # ==========================================
-# 7. WRITE DIRECTLY TO index.html
+# 8. WRITE DIRECTLY TO index.html
 # ==========================================
 print("=== Step 5: Writing index.html file ===")
 with open("index.html", "w", encoding="utf-8") as f:
