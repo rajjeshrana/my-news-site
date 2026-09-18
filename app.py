@@ -94,7 +94,7 @@ pivot_data = extract_pivot_levels(unique_articles)
 # ==========================================
 # 4. REWRITE BRIEFING VIA GROQ (<100 WORDS)
 # ==========================================
-print("=== Step 3: Generating Morning 7 AM Market Briefing ===")
+print("=== Step 3: Generating Morning Market Briefing ===")
 
 prompt = f"""
 Summarize the last 24 hours of market events into a morning 7:00 AM IST pre-market briefing.
@@ -184,7 +184,7 @@ pivot_table_html += """
 news_bullets_html = "".join([f"<li><b>Market Update:</b> {title}</li>" for title in unique_articles[:6]])
 
 # ==========================================
-# 7. CONSTRUCT HTML PAGE
+# 7. CONSTRUCT HTML PAGE (LIVE FEEDS TOP FIRST)
 # ==========================================
 print("=== Step 4: Formatting HTML Page ===")
 ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%b %d, %Y | %I:%M %p IST")
@@ -196,7 +196,7 @@ full_html = (
     '    <meta charset="UTF-8">\n'
     '    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
     '    <meta http-equiv="refresh" content="300">\n'
-    "    <title>Morning Briefing & Live Market Updates</title>\n"
+    "    <title>Live Market Feeds & Pre-Market Briefing</title>\n"
     "    <style>\n"
     "        body {\n"
     "            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n"
@@ -236,7 +236,7 @@ full_html = (
     "        }\n"
     "        .card {\n"
     "            background: #ffffff;\n"
-    "            border-left: 5px solid #1976d2;\n"
+    "            border-left: 5px solid #388e3c;\n"
     "            padding: 20px 25px;\n"
     "            border-radius: 6px;\n"
     "            box-shadow: 0 2px 8px rgba(0,0,0,0.05);\n"
@@ -283,20 +283,20 @@ full_html = (
     "    </style>\n"
     "</head>\n"
     "<body>\n"
-    "    <h1>Daily Pre-Market Briefing & Updates</h1>\n"
+    "    <h1>Live Market Updates & Pre-Market Briefing</h1>\n"
     f'    <div class="timestamp">🕒 Last Updated: {ist_time}</div>\n'
-    '    <div class="badge">☀️ Morning Briefing Scheduled @ 7:00 AM IST</div>\n'
+    '    <div class="badge">⚡ 48-Hour Live Auto-Cleaned Data</div>\n'
     "    <hr>\n"
     '    <div class="card">\n'
-    '        <h3 style="margin-top:0; color:#0d47a1;">☕ Morning 7 AM Pre-Market Briefing (&lt;100 Words)</h3>\n'
-    f"        {ai_html_content}\n"
-    "    </div>\n"
-    f"    {pivot_table_html}\n"
-    '    <div class="card" style="border-left-color: #388e3c;">\n'
     '        <h3 style="margin-top:0; color:#2e7d32;">📰 48-Hour Live Market Feed</h3>\n'
     "        <ul>\n"
     f"            {news_bullets_html}\n"
     "        </ul>\n"
+    "    </div>\n"
+    f"    {pivot_table_html}\n"
+    '    <div class="card" style="border-left-color: #1976d2;">\n'
+    '        <h3 style="margin-top:0; color:#0d47a1;">☕ Morning 7 AM Pre-Market Briefing (&lt;100 Words)</h3>\n'
+    f"        {ai_html_content}\n"
     "    </div>\n"
     "</body>\n"
     "</html>"
