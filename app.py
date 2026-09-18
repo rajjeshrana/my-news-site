@@ -5,31 +5,38 @@ import feedparser
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+# ==========================================
+# 1. SECRETS VALIDATION
+# ==========================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 if not GROQ_API_KEY:
-    print("? ERROR: Missing GROQ_API_KEY secret.")
+    print("❌ ERROR: Missing GROQ_API_KEY secret.")
     sys.exit(1)
 
+# Clean string RSS feeds
 RSS_FEEDS = [
-    "[https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en](https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en)",
-    "[https://news.google.com/rss/search?q=usd+inr+forex+crypto+commodities&hl=en-IN&gl=IN&ceid=IN:en](https://news.google.com/rss/search?q=usd+inr+forex+crypto+commodities&hl=en-IN&gl=IN&ceid=IN:en)"
+    "https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=usd+inr+forex+crypto+commodities&hl=en-IN&gl=IN&ceid=IN:en"
 ]
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
+# ==========================================
+# 2. INGEST RSS FEEDS
+# ==========================================
 print("=== Step 1: Ingesting Live Market Feeds ===")
 articles = []
 for feed_url in RSS_FEEDS:
     try:
         resp = requests.get(feed_url, headers=HEADERS, timeout=10)
         feed = feedparser.parse(resp.content)
-        for entry in feed.entries[:5]:
+        for entry in feed.entries[:5]:  # Top 5 articles per feed
             articles.append(f"- {entry.title}")
     except Exception as e:
-        print(f"?? Error fetching feed {feed_url}: {e}")
+        print(f"⚠️ Error fetching feed {feed_url}: {e}")
 
 if not articles:
     articles = [
@@ -40,6 +47,9 @@ if not articles:
 news_text = "\n".join(articles)
 print(f"Total articles gathered: {len(articles)}")
 
+# ==========================================
+# 3. GENERATE AI SUMMARY VIA GROQ
+# ==========================================
 print("=== Step 2: Generating Market Summary with Groq AI ===")
 prompt = f"""
 You are a top financial journalist. Summarize the following news articles into structured market updates.
@@ -50,7 +60,7 @@ Articles:
 {news_text}
 """
 
-groq_url = "https://api.groq.com/openai/v1/chat/completions"
+groq_url = "[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)"
 groq_headers = {
     "Authorization": f"Bearer {GROQ_API_KEY}",
     "Content-Type": "application/json"
@@ -63,11 +73,14 @@ payload = {
 
 response = requests.post(groq_url, json=payload, headers=groq_headers)
 if response.status_code != 200:
-    print(f"? Groq API Error: {response.status_code} - {response.text}")
+    print(f"❌ Groq API Error: {response.status_code} - {response.text}")
     sys.exit(1)
 
 ai_html_content = response.json()["choices"][0]["message"]["content"]
 
+# ==========================================
+# 4. CONSTRUCT COMPLETE HTML PAGE WITH IST TIMESTAMP
+# ==========================================
 print("=== Step 3: Formatting HTML Page with Live IST Timestamp ===")
 ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%b %d, %Y | %I:%M %p IST")
 
@@ -119,7 +132,7 @@ full_html = f"""<!DOCTYPE html>
 </head>
 <body>
     <h1>Global Markets Shift: Forex, India Stocks, Oil, and Crypto Update</h1>
-    <div class="timestamp">?? Last Updated: {ist_time}</div>
+    <div class="timestamp">🕒 Last Updated: {ist_time}</div>
     <hr>
     <div class="card">
         {ai_html_content}
@@ -128,8 +141,11 @@ full_html = f"""<!DOCTYPE html>
 </html>
 """
 
+# ==========================================
+# 5. WRITE DIRECTLY TO index.html FILE
+# ==========================================
 print("=== Step 4: Writing index.html file ===")
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("? Successfully generated index.html!")
+print("✅ Successfully generated index.html!")
