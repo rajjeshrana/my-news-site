@@ -73,8 +73,10 @@ groq_headers = {
     "Authorization": f"Bearer {GROQ_API_KEY}",
     "Content-Type": "application/json"
 }
+
+# Using llama-3.2-11b-vision-preview which is active on standard Groq free tiers
 payload = {
-    "model": "llama-3.1-8b-instant",
+    "model": "llama-3.2-11b-vision-preview",
     "messages": [{"role": "user", "content": prompt}],
     "temperature": 0.5
 }
