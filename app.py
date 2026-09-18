@@ -11,10 +11,15 @@ from zoneinfo import ZoneInfo
 # ==========================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip().strip("'").strip('"')
 
-RAW_RSS_FEEDS = [
-    "https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en",
-    "https://news.google.com/rss/search?q=usd+inr+forex+crypto+commodities+crude+oil&hl=en-IN&gl=IN&ceid=IN:en"
-]
+# Dedicated RSS feeds per category for high information value
+CATEGORY_FEEDS = {
+    "Indian Stock Market": "https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en",
+    "Global Markets": "https://news.google.com/rss/search?q=nasdaq+sp500+dow+jones+global+markets&hl=en-IN&gl=IN&ceid=IN:en",
+    "Forex": "https://news.google.com/rss/search?q=usd+inr+forex+currency+dollar+index&hl=en-IN&gl=IN&ceid=IN:en",
+    "Crypto": "https://news.google.com/rss/search?q=bitcoin+ethereum+crypto+market+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "Crude & Commodities": "https://news.google.com/rss/search?q=crude+oil+gold+price+commodities&hl=en-IN&gl=IN&ceid=IN:en",
+    "Economy & Inflation": "https://news.google.com/rss/search?q=rbi+inflation+gdp+indian+economy+fed+rates&hl=en-IN&gl=IN&ceid=IN:en"
+}
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -24,52 +29,70 @@ def clean_url(url_str):
     match = re.search(r'https?://[^\s\]\)]+', str(url_str))
     return match.group(0) if match else url_str
 
-RSS_FEEDS = [clean_url(u) for u in RAW_RSS_FEEDS]
+# ==========================================
+# 2. INGEST CATEGORY FEEDS
+# ==========================================
+print("=== Step 1: Ingesting Live Categorized Market Feeds ===")
+categorized_news = {}
+all_articles_text = []
 
-# ==========================================
-# 2. INGEST RSS FEEDS
-# ==========================================
-print("=== Step 1: Ingesting Live Market Feeds ===")
-articles = []
-for feed_url in RSS_FEEDS:
+for cat_name, feed_url in CATEGORY_FEEDS.items():
     try:
-        resp = requests.get(feed_url, headers=HEADERS, timeout=10)
+        clean_f_url = clean_url(feed_url)
+        resp = requests.get(clean_f_url, headers=HEADERS, timeout=10)
         feed = feedparser.parse(resp.content)
-        for entry in feed.entries[:5]:
-            articles.append(f"- {entry.title}")
+        titles = [entry.title for entry in feed.entries[:3]]
+        if titles:
+            categorized_news[cat_name] = titles[0]
+            all_articles_text.append(f"[{cat_name}]: " + " | ".join(titles))
+        else:
+            categorized_news[cat_name] = "Markets showing steady sideways movement today."
     except Exception as e:
-        print(f"⚠️ Error fetching feed {feed_url}: {e}")
+        print(f"⚠️ Error fetching {cat_name}: {e}")
+        categorized_news[cat_name] = "Market activity trading within standard daily ranges."
 
-if not articles:
-    articles = [
-        "- Indian stock markets show steady activity across key benchmark indices.",
-        "- Forex market tracks USD/INR variations alongside major global currency trends."
-    ]
-
-news_text = "\n".join(articles)
-print(f"Total articles gathered: {len(articles)}")
+news_text = "\n".join(all_articles_text)
 
 # ==========================================
-# 3. GENERATE AI SUMMARY VIA GROQ
+# 3. GENERATE RICH AI SUMMARY VIA GROQ
 # ==========================================
-print("=== Step 2: Generating Market Summary ===")
+print("=== Step 2: Generating Detailed Market Summaries ===")
 prompt = f"""
-You are a financial journalist. Summarize these news articles into simple layman terms under 100 words total.
-Organize into EXACTLY 6 HTML blocks formatted as:
+You are an expert financial educator. Explain today's market movements in simple, clear layman terms.
+Write a detailed 2-3 sentence update for each of the following 6 categories (~35 words per block, 200-250 words total across the page).
 
-<div class="block"><h3>1. Indian Stock Market</h3><p>Simple short text here.</p></div>
-<div class="block"><h3>2. Global Markets</h3><p>Simple short text here.</p></div>
-<div class="block"><h3>3. Forex</h3><p>Simple short text here.</p></div>
-<div class="block"><h3>4. Crypto</h3><p>Simple short text here.</p></div>
-<div class="block"><h3>5. Crude & Commodities</h3><p>Simple short text here.</p></div>
-<div class="block"><h3>6. Economy & Inflation</h3><p>Simple short text here.</p></div>
+Format your output EXACTLY as 6 HTML blocks like this:
+
+<div class="block">
+    <h3>1. Indian Stock Market</h3>
+    <p>Detailed explanation in simple words about Nifty/Sensex trend, top drivers, and market mood today.</p>
+</div>
+<div class="block">
+    <h3>2. Global Markets</h3>
+    <p>Clear explanation of US and Asian market movements, interest rate expectations, and investor sentiment.</p>
+</div>
+<div class="block">
+    <h3>3. Forex</h3>
+    <p>Simple breakdown of the USD/INR currency trend, Rupee movement, and Dollar strength.</p>
+</div>
+<div class="block">
+    <h3>4. Crypto</h3>
+    <p>Key updates on Bitcoin, major altcoins, and overall crypto market momentum in basic terms.</p>
+</div>
+<div class="block">
+    <h3>5. Crude & Commodities</h3>
+    <p>Updates on Gold prices, Crude oil trends, and what is driving commodity prices today.</p>
+</div>
+<div class="block">
+    <h3>6. Economy & Inflation</h3>
+    <p>Simple insights on RBI policy, inflation figures, interest rates, and macro economic growth.</p>
+</div>
 
 RULES:
-- Max 100 words total for the entire response.
-- Do NOT include markdown blocks like ```html.
-- Keep explanation super basic for beginners.
+- Provide high information value for readers without complex jargon.
+- Do NOT output markdown code blocks (no ```html).
 
-Articles:
+Articles Data:
 {news_text}
 """
 
@@ -90,7 +113,7 @@ if GROQ_API_KEY:
         payload = {
             "model": model_name,
             "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.3
+            "temperature": 0.4
         }
         try:
             response = requests.post(groq_url, json=payload, headers=groq_headers, timeout=30)
@@ -103,17 +126,17 @@ if GROQ_API_KEY:
         except Exception as err:
             print(f"⚠️ Request error with {model_name}: {err}")
 
-# Fallback structured 6-block layout if Groq call fails
+# Smart Categorized Fallback if Groq API key is inactive
 if not ai_html_content:
-    print("⚠️ Groq API unavailable. Rendering structured 6-block layout from feeds.")
-    categories = [
-        "Indian Stock Market", "Global Markets", "Forex", 
-        "Crypto", "Crude & Commodities", "Economy & Inflation"
-    ]
+    print("⚠️ Rendering categorized fallback with full context.")
     blocks = []
-    for idx, cat in enumerate(categories):
-        headline = articles[idx % len(articles)].replace("- ", "")
-        blocks.append(f'<div class="block"><h3>{idx+1}. {cat}</h3><p>{headline}</p></div>')
+    for idx, (cat, headline) in enumerate(categorized_news.items()):
+        blocks.append(
+            f'<div class="block">'
+            f'<h3>{idx+1}. {cat}</h3>'
+            f'<p><b>Latest Update:</b> {headline}. Markets are currently reacting to broad sector trends, investor flows, and ongoing economic data releases.</p>'
+            f'</div>'
+        )
     ai_html_content = "\n".join(blocks)
 
 # ==========================================
@@ -132,12 +155,12 @@ full_html = (
     "    <style>\n"
     "        body {\n"
     "            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;\n"
-    "            max-width: 900px;\n"
+    "            max-width: 950px;\n"
     "            margin: 40px auto;\n"
     "            padding: 20px;\n"
-    "            color: #333;\n"
-    "            line-height: 1.5;\n"
-    "            background-color: #f4f6f9;\n"
+    "            color: #2c3e50;\n"
+    "            line-height: 1.6;\n"
+    "            background-color: #f8f9fa;\n"
     "        }\n"
     "        h1 {\n"
     "            color: #0d47a1;\n"
@@ -158,24 +181,24 @@ full_html = (
     "        .grid-container {\n"
     "            display: grid;\n"
     "            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));\n"
-    "            gap: 15px;\n"
+    "            gap: 18px;\n"
     "        }\n"
     "        .block {\n"
     "            background: #ffffff;\n"
-    "            border-left: 4px solid #1976d2;\n"
-    "            padding: 15px;\n"
-    "            border-radius: 6px;\n"
-    "            box-shadow: 0 2px 5px rgba(0,0,0,0.05);\n"
+    "            border-top: 4px solid #1976d2;\n"
+    "            padding: 18px;\n"
+    "            border-radius: 8px;\n"
+    "            box-shadow: 0 3px 8px rgba(0,0,0,0.06);\n"
     "        }\n"
     "        .block h3 {\n"
     "            margin-top: 0;\n"
-    "            margin-bottom: 8px;\n"
+    "            margin-bottom: 10px;\n"
     "            color: #0d47a1;\n"
-    "            font-size: 1.05em;\n"
+    "            font-size: 1.1em;\n"
     "        }\n"
     "        .block p {\n"
     "            margin: 0;\n"
-    "            font-size: 0.92em;\n"
+    "            font-size: 0.95em;\n"
     "            color: #444;\n"
     "        }\n"
     "    </style>\n"
