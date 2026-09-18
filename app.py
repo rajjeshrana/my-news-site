@@ -25,6 +25,7 @@ HEADERS = {
 }
 
 def clean_url(url_str):
+    """Strips Markdown link formatting or extra trailing characters if copied accidentally."""
     match = re.search(r'https?://[^\s\]\)]+', str(url_str))
     return match.group(0) if match else url_str
 
@@ -39,7 +40,7 @@ for feed_url in RSS_FEEDS:
     try:
         resp = requests.get(feed_url, headers=HEADERS, timeout=10)
         feed = feedparser.parse(resp.content)
-        for entry in feed.entries[:5]:
+        for entry in feed.entries[:5]:  # Get top 5 articles per feed
             articles.append(f"- {entry.title}")
     except Exception as e:
         print(f"⚠️ Error fetching feed {feed_url}: {e}")
@@ -74,7 +75,7 @@ groq_headers = {
     "Content-Type": "application/json"
 }
 payload = {
-    "model": "llama-3.3-70b-versatile",
+    "model": "llama-3.1-8b-instant",
     "messages": [{"role": "user", "content": prompt}],
     "temperature": 0.5
 }
@@ -87,7 +88,7 @@ if response.status_code != 200:
 ai_html_content = response.json()["choices"][0]["message"]["content"]
 
 # ==========================================
-# 4. CONSTRUCT HTML PAGE
+# 4. CONSTRUCT HTML PAGE WITH IST TIMESTAMP
 # ==========================================
 print("=== Step 3: Formatting HTML Page with Live IST Timestamp ===")
 ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%b %d, %Y | %I:%M %p IST")
