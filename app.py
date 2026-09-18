@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import requests
 import feedparser
 from datetime import datetime
@@ -14,8 +15,8 @@ if not GROQ_API_KEY:
     print("❌ ERROR: Missing GROQ_API_KEY secret.")
     sys.exit(1)
 
-# Clean string RSS feeds
-RSS_FEEDS = [
+# RSS Feeds for Financial Market Updates
+RAW_RSS_FEEDS = [
     "https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en",
     "https://news.google.com/rss/search?q=usd+inr+forex+crypto+commodities&hl=en-IN&gl=IN&ceid=IN:en"
 ]
@@ -23,6 +24,14 @@ RSS_FEEDS = [
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
+
+def clean_url(url_str):
+    """Strips Markdown links or extra brackets if copied accidentally."""
+    match = re.search(r'https?://[^\s\]\)]+', str(url_str))
+    return match.group(0) if match else url_str
+
+# Clean feed URLs
+RSS_FEEDS = [clean_url(u) for u in RAW_RSS_FEEDS]
 
 # ==========================================
 # 2. INGEST RSS FEEDS
@@ -60,7 +69,9 @@ Articles:
 {news_text}
 """
 
-groq_url = "[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)"
+raw_groq_url = "[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)"
+groq_url = clean_url(raw_groq_url)
+
 groq_headers = {
     "Authorization": f"Bearer {GROQ_API_KEY}",
     "Content-Type": "application/json"
@@ -108,44 +119,3 @@ full_html = f"""<!DOCTYPE html>
             font-weight: 600;
             font-size: 0.95em;
             margin-bottom: 20px;
-        }}
-        hr {{
-            border: 0;
-            height: 1px;
-            background: #e0e0e0;
-            margin-bottom: 25px;
-        }}
-        .card {{
-            background: #f8f9fa;
-            border-left: 4px solid #1976d2;
-            padding: 15px 20px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }}
-        ul {{
-            padding-left: 20px;
-        }}
-        li {{
-            margin-bottom: 8px;
-        }}
-    </style>
-</head>
-<body>
-    <h1>Global Markets Shift: Forex, India Stocks, Oil, and Crypto Update</h1>
-    <div class="timestamp">🕒 Last Updated: {ist_time}</div>
-    <hr>
-    <div class="card">
-        {ai_html_content}
-    </div>
-</body>
-</html>
-"""
-
-# ==========================================
-# 5. WRITE DIRECTLY TO index.html FILE
-# ==========================================
-print("=== Step 4: Writing index.html file ===")
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(full_html)
-
-print("✅ Successfully generated index.html!")
