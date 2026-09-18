@@ -15,7 +15,6 @@ if not GROQ_API_KEY:
     print("❌ ERROR: Missing GROQ_API_KEY secret.")
     sys.exit(1)
 
-# RSS Feeds for Financial Market Updates
 RAW_RSS_FEEDS = [
     "https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en",
     "https://news.google.com/rss/search?q=usd+inr+forex+crypto+commodities&hl=en-IN&gl=IN&ceid=IN:en"
@@ -26,7 +25,6 @@ HEADERS = {
 }
 
 def clean_url(url_str):
-    """Strips Markdown links or extra brackets if copied accidentally."""
     match = re.search(r'https?://[^\s\]\)]+', str(url_str))
     return match.group(0) if match else url_str
 
@@ -41,7 +39,7 @@ for feed_url in RSS_FEEDS:
     try:
         resp = requests.get(feed_url, headers=HEADERS, timeout=10)
         feed = feedparser.parse(resp.content)
-        for entry in feed.entries[:5]:  # Top 5 articles per feed
+        for entry in feed.entries[:5]:
             articles.append(f"- {entry.title}")
     except Exception as e:
         print(f"⚠️ Error fetching feed {feed_url}: {e}")
@@ -84,3 +82,80 @@ payload = {
 response = requests.post(groq_url, json=payload, headers=groq_headers)
 if response.status_code != 200:
     print(f"❌ Groq API Error: {response.status_code} - {response.text}")
+    sys.exit(1)
+
+ai_html_content = response.json()["choices"][0]["message"]["content"]
+
+# ==========================================
+# 4. CONSTRUCT HTML PAGE
+# ==========================================
+print("=== Step 3: Formatting HTML Page with Live IST Timestamp ===")
+ist_time = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%b %d, %Y | %I:%M %p IST")
+
+html_template = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Financial Market Updates</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #0d47a1;
+            margin-bottom: 5px;
+        }
+        .timestamp {
+            color: #666;
+            font-weight: 600;
+            font-size: 0.95em;
+            margin-bottom: 20px;
+        }
+        hr {
+            border: 0;
+            height: 1px;
+            background: #e0e0e0;
+            margin-bottom: 25px;
+        }
+        .card {
+            background: #f8f9fa;
+            border-left: 4px solid #1976d2;
+            padding: 15px 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Global Markets Shift: Forex, India Stocks, Oil, and Crypto Update</h1>
+    <div class="timestamp">🕒 Last Updated: {TIMESTAMP}</div>
+    <hr>
+    <div class="card">
+        {CONTENT}
+    </div>
+</body>
+</html>
+"""
+
+full_html = html_template.replace("{TIMESTAMP}", ist_time).replace("{CONTENT}", ai_html_content)
+
+# ==========================================
+# 5. WRITE DIRECTLY TO index.html FILE
+# ==========================================
+print("=== Step 4: Writing index.html file ===")
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(full_html)
+
+print("✅ Successfully generated index.html!")
