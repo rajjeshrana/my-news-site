@@ -1,7 +1,12 @@
 name: Live Financial News Automation
 
 on:
-  workflow_dispatch: # Allows triggering via external API call or button click
+  workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
+
+permissions:
+  contents: write
 
 jobs:
   run-pipeline:
