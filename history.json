@@ -1,5 +1,17 @@
 [
   {
+    "timestamp": "12:31 AM IST",
+    "time_epoch": 1789758082.288425,
+    "updates": [
+      "<b>Indian Stock Market:</b> Stock Market Today Highlights: Sensex ends 22 points lower, Nifty gains 53 points",
+      "<b>US & Global Markets:</b> NASDAQ, S&P 500, Dow Jones advance as tech shares rally; oil and bond yields ease",
+      "<b>Forex:</b> The sharp drop in oil prices, coupled with the Reserve Bank of India's efforts to stabilize the currency, pushed the U.S. dollar to a two-week low against the Indian rupee.",
+      "<b>Crude Oil & Commodities:</b> Gold price extends gains despite US Fed rate hike: Should investors chase the rally? Key outlook explained",
+      "<b>Crypto (Top Coins):</b> Bitcoin vs Ethereum vs Solana: Which crypto asset is best positioned for the next bull run?",
+      "<b>Global Macro & Important Updates:</b> US Federal Reserve hikes interest rates \u2014 but will RBI follow suit?"
+    ]
+  },
+  {
     "timestamp": "12:19 AM IST",
     "time_epoch": 1789757373.964869,
     "updates": [
