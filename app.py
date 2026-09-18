@@ -25,6 +25,7 @@ HEADERS = {
 }
 
 def clean_url(url_str):
+    """Strips Markdown link wrappers or extra brackets if copied accidentally."""
     match = re.search(r'https?://[^\s\]\)]+', str(url_str))
     return match.group(0) if match else url_str
 
@@ -39,7 +40,7 @@ for feed_url in RSS_FEEDS:
     try:
         resp = requests.get(feed_url, headers=HEADERS, timeout=10)
         feed = feedparser.parse(resp.content)
-        for entry in feed.entries[:5]:
+        for entry in feed.entries[:5]:  # Get top 5 articles per feed
             articles.append(f"- {entry.title}")
     except Exception as e:
         print(f"⚠️ Error fetching feed {feed_url}: {e}")
@@ -74,8 +75,8 @@ groq_headers = {
     "Content-Type": "application/json"
 }
 
-# Fallback models list in case one endpoint is unavailable
-MODELS_TO_TRY = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "mixtral-8x7b-32768"]
+# Fallback sequence across Groq production models
+MODELS_TO_TRY = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
 ai_html_content = None
 
 for model_name in MODELS_TO_TRY:
@@ -94,7 +95,7 @@ for model_name in MODELS_TO_TRY:
         print(f"⚠️ Failed with {model_name}: {response.status_code} - {response.text}")
 
 if not ai_html_content:
-    print("❌ Groq API Error: All model attempts failed.")
+    print("❌ Groq API Error: All model attempts failed. Please verify GROQ_API_KEY secret.")
     sys.exit(1)
 
 # ==========================================
