@@ -3,23 +3,40 @@ import sys
 import re
 import time
 import json
+import hashlib
 import requests
 import feedparser
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 # ==========================================
-# 1. CATEGORY SOURCES & CONFIG
+# 1. EXPANDED RSS SOURCES (LEADING SITES & MACRO)
 # ==========================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip().strip("'").strip('"')
 
 CATEGORY_FEEDS = {
-    "Indian Stock Market": "https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en",
-    "US & Global Markets": "https://news.google.com/rss/search?q=nasdaq+sp500+dow+jones+global+markets&hl=en-IN&gl=IN&ceid=IN:en",
-    "Forex": "https://news.google.com/rss/search?q=usd+inr+forex+currency+dollar+index&hl=en-IN&gl=IN&ceid=IN:en",
-    "Crude Oil & Commodities": "https://news.google.com/rss/search?q=crude+oil+gold+price+commodities&hl=en-IN&gl=IN&ceid=IN:en",
-    "Crypto (Top Coins)": "https://news.google.com/rss/search?q=bitcoin+ethereum+solana+crypto+market&hl=en-IN&gl=IN&ceid=IN:en",
-    "Global Macro & Important Updates": "https://news.google.com/rss/search?q=fed+rbi+interest+rates+inflation+economy&hl=en-IN&gl=IN&ceid=IN:en"
+    "Indian Stock Market": [
+        "https://news.google.com/rss/search?q=nifty+sensex+stock+market+india&hl=en-IN&gl=IN&ceid=IN:en",
+        "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms"
+    ],
+    "US & Global Markets": [
+        "https://news.google.com/rss/search?q=nasdaq+sp500+dow+jones+wall+street&hl=en-US&gl=US&ceid=US:en",
+        "https://search.cnbc.com/rs/search/combined:rss?source=cnbc&q=markets"
+    ],
+    "Forex": [
+        "https://www.forexlive.com/feed/news",
+        "https://news.google.com/rss/search?q=forexfactory+usd+inr+forex+dollar+index&hl=en-IN&gl=IN&ceid=IN:en"
+    ],
+    "Crude Oil & Commodities": [
+        "https://news.google.com/rss/search?q=crude+oil+gold+price+brent+commodities&hl=en-IN&gl=IN&ceid=IN:en"
+    ],
+    "Crypto (Top Coins)": [
+        "https://www.coindesk.com/arc/outboundfeeds/rss/",
+        "https://news.google.com/rss/search?q=bitcoin+ethereum+solana+crypto&hl=en-US&gl=US&ceid=US:en"
+    ],
+    "Global Macro & Important Updates": [
+        "https://news.google.com/rss/search?q=fed+rbi+interest+rates+inflation+macro+economy&hl=en-US&gl=US&ceid=US:en"
+    ]
 }
 
 HEADERS = {
@@ -31,9 +48,9 @@ def clean_url(url_str):
     return match.group(0) if match else url_str
 
 # ==========================================
-# 2. INGEST & CLEAN HEADLINES
+# 2. INGEST & DEDUPLICATE LIVE FEEDS
 # ==========================================
-print("=== Step 1: Ingesting Fresh Market News ===")
+print("=== Step 1: Ingesting Fresh Market News Across Global Sources ===")
 now_ist = datetime.now(ZoneInfo("Asia/Kolkata"))
 current_time_str = now_ist.strftime("%I:%M %p IST")
 now_utc = datetime.now(timezone.utc)
@@ -41,30 +58,55 @@ now_utc = datetime.now(timezone.utc)
 category_data = {}
 all_headlines_flat = []
 
-for cat_name, feed_url in CATEGORY_FEEDS.items():
+for cat_name, feed_urls in CATEGORY_FEEDS.items():
+    cleaned_titles = []
+    for feed_url in feed_urls:
+        try:
+            resp = requests.get(clean_url(feed_url), headers=HEADERS, timeout=8)
+            feed = feedparser.parse(resp.content)
+            for entry in feed.entries[:2]:
+                t = re.sub(r'\s*-\s*[^-]+$', '', entry.title)
+                t = re.sub(r'\?.*$', '', t).strip()
+                if t and t not in cleaned_titles:
+                    cleaned_titles.append(t)
+        except Exception as e:
+            print(f"⚠️ Error fetching {cat_name} from {feed_url}: {e}")
+            
+    if cleaned_titles:
+        category_data[cat_name] = cleaned_titles[:2]
+        all_headlines_flat.extend(cleaned_titles[:2])
+    else:
+        category_data[cat_name] = ["Benchmark levels maintain steady intraday bounds."]
+
+# Build unique signature hash of current fetched headlines
+raw_combined_text = " | ".join(all_headlines_flat)
+current_content_hash = hashlib.md5(raw_combined_text.encode('utf-8')).hexdigest()
+
+# ==========================================
+# 3. DEDUPLICATION CHECK AGAINST HISTORY
+# ==========================================
+HISTORY_FILE = "history.json"
+blocks_history = []
+
+if os.path.exists(HISTORY_FILE):
     try:
-        resp = requests.get(clean_url(feed_url), headers=HEADERS, timeout=10)
-        feed = feedparser.parse(resp.content)
-        cleaned = []
-        for entry in feed.entries[:2]:
-            t = re.sub(r'\s*-\s*[^-]+$', '', entry.title) # Strip outlet
-            t = re.sub(r'\?.*$', '', t)                 # Strip trailing questions
-            cleaned.append(t)
-        if cleaned:
-            category_data[cat_name] = cleaned
-            all_headlines_flat.extend(cleaned)
-        else:
-            category_data[cat_name] = ["Benchmark indices maintain steady trading bounds."]
+        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+            raw_history = json.load(f)
+            blocks_history = [b for b in raw_history if b.get("html_content") and len(b.get("html_content").strip()) > 10]
     except Exception as e:
-        print(f"⚠️ Error fetching {cat_name}: {e}")
-        category_data[cat_name] = ["Market operations trading within regular daily parameters."]
+        print(f"⚠️ Load error on history.json: {e}")
+
+# Check if latest saved block matches current content hash
+latest_hash = blocks_history[0].get("hash") if blocks_history else None
+
+if latest_hash == current_content_hash:
+    print("ℹ️ No new market updates detected in this 15-minute window. Skipping duplicate block creation!")
+    sys.exit(0)  # Exit cleanly without appending duplicate card
 
 # ==========================================
-# 3. BUILD DETAILED LAYMAN COMMENTARY
+# 4. SYNTHESIZE DETAILED LAYMAN COMMENTARY
 # ==========================================
-print("=== Step 2: Synthesizing Detailed Layman Commentary ===")
-
-# Attempt Groq AI if key exists
+print("=== Step 2: Generating Detailed Layman Commentary ===")
 ai_bullets_html = None
 
 if GROQ_API_KEY:
@@ -99,73 +141,42 @@ Headlines:
         except Exception as e:
             print(f"⚠️ Groq failed: {e}")
 
-# Guaranteed Rich Local Synthesizer (If Groq is offline/unconfigured)
 if not ai_bullets_html:
-    print("⚠️ Applying Local Structured Layman Synthesizer...")
+    print("⚠️ Applying Structured Layman Synthesizer...")
     generated_items = []
     
-    # 1. Indian Stocks
     in_text = " ".join(category_data.get("Indian Stock Market", []))
-    generated_items.append(
-        f"<li><b>Indian Stock Market:</b> {in_text}. Benchmarks show consolidation as domestic institutional inflows provide a supportive floor against global rate volatility.</li>"
-    )
+    generated_items.append(f"<li><b>Indian Stock Market:</b> {in_text}. Benchmarks show consolidation as domestic institutional inflows provide support.</li>")
     
-    # 2. US & Global
     us_text = " ".join(category_data.get("US & Global Markets", []))
-    generated_items.append(
-        f"<li><b>US & Global Markets:</b> {us_text}. Wall Street futures reflect cautious investor sentiment ahead of central bank interest rate updates.</li>"
-    )
+    generated_items.append(f"<li><b>US & Global Markets:</b> {us_text}. Wall Street futures reflect cautious investor sentiment ahead of central bank updates.</li>")
     
-    # 3. Forex
     fx_text = " ".join(category_data.get("Forex", []))
-    generated_items.append(
-        f"<li><b>Forex:</b> {fx_text}. The USD/INR pair tracks foreign capital movements, maintaining balance as dollar index fluctuations level off.</li>"
-    )
+    generated_items.append(f"<li><b>Forex:</b> {fx_text}. The USD/INR pair tracks foreign capital movements as dollar index fluctuations level off.</li>")
     
-    # 4. Commodities
     cm_text = " ".join(category_data.get("Crude Oil & Commodities", []))
-    generated_items.append(
-        f"<li><b>Crude Oil & Commodities:</b> {cm_text}. Easing energy prices provide inflation relief for Asian import markets while precious metals hold steady bounds.</li>"
-    )
+    generated_items.append(f"<li><b>Crude Oil & Commodities:</b> {cm_text}. Easing energy prices provide inflation relief for importing nations while precious metals stay bound.</li>")
     
-    # 5. Crypto
     cr_text = " ".join(category_data.get("Crypto (Top Coins)", []))
-    generated_items.append(
-        f"<li><b>Crypto (Top Coins):</b> {cr_text}. Major digital assets like Bitcoin and Ethereum maintain key price zones as traders monitor broader liquidity shifts.</li>"
-    )
+    generated_items.append(f"<li><b>Crypto (Top Coins):</b> {cr_text}. Major digital assets like Bitcoin and Ethereum maintain key zones as traders monitor liquidity.</li>")
     
-    # 6. Global Macro
     mc_text = " ".join(category_data.get("Global Macro & Important Updates", []))
-    generated_items.append(
-        f"<li><b>Global Macro & Important Updates:</b> {mc_text}. Central bank policies remain the primary driver for international capital flows and economic growth projections.</li>"
-    )
+    generated_items.append(f"<li><b>Global Macro & Important Updates:</b> {mc_text}. Central bank policies remain the primary driver for global capital flows.</li>")
     
     ai_bullets_html = "\n".join(generated_items)
 
 # ==========================================
-# 4. MANAGE HISTORY & PURGE CORRUPTED BLOCKS
+# 5. SAVE NEW BLOCK & PURGE > 48 HOURS
 # ==========================================
-HISTORY_FILE = "history.json"
-blocks_history = []
-
-if os.path.exists(HISTORY_FILE):
-    try:
-        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-            raw_history = json.load(f)
-            # Filter out any old corrupted empty entries
-            blocks_history = [b for b in raw_history if b.get("html_content") and len(b.get("html_content").strip()) > 10]
-    except Exception as e:
-        print(f"⚠️ Resetting history.json due to load error: {e}")
-
-# Prepend fresh 15-minute block
 new_block = {
     "timestamp": current_time_str,
     "time_epoch": now_utc.timestamp(),
+    "hash": current_content_hash,
     "html_content": ai_bullets_html
 }
+
 blocks_history.insert(0, new_block)
 
-# Purge items older than 48 hours
 cutoff_epoch = (now_utc - timedelta(hours=48)).timestamp()
 blocks_history = [b for b in blocks_history if b.get("time_epoch", now_utc.timestamp()) >= cutoff_epoch]
 
@@ -173,7 +184,7 @@ with open(HISTORY_FILE, "w", encoding="utf-8") as f:
     json.dump(blocks_history, f, indent=2)
 
 # ==========================================
-# 5. CALCULATE PIVOT POINTS
+# 6. CALCULATE PIVOTS & RENDER HTML
 # ==========================================
 def extract_pivot_levels(text_data):
     pivots = {
@@ -190,9 +201,6 @@ def extract_pivot_levels(text_data):
 
 pivot_data = extract_pivot_levels(all_headlines_flat)
 
-# ==========================================
-# 6. RENDER HTML PAGE
-# ==========================================
 commentary_blocks_html = ""
 for block in blocks_history[:10]:
     t_stamp = block.get("timestamp", "Live Update")
@@ -233,30 +241,30 @@ full_html = (
     '    <meta http-equiv="refresh" content="300">\n'
     "    <title>Live Market Feed & Pre-Market Briefing</title>\n"
     "    <style>\n"
-    "        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 850px; margin: 30px auto; padding: 20px; color: #2c3e50; line-height: 1.6; background-color: #f8f9fa; }\n"
-    "        h1 { color: #0d47a1; font-size: 1.8em; margin-bottom: 5px; }\n"
-    "        .timestamp { color: #666; font-weight: 600; font-size: 0.9em; margin-bottom: 15px; }\n"
-    "        .badge { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold; display: inline-block; margin-bottom: 20px; }\n"
-    "        hr { border: 0; height: 1px; background: #e0e0e0; margin-bottom: 20px; }\n"
-    "        .time-card { background: #ffffff; border-left: 5px solid #2e7d32; padding: 18px 22px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); margin-bottom: 18px; }\n"
-    "        .time-header { font-weight: bold; color: #1b5e20; font-size: 1.05em; margin-bottom: 12px; }\n"
-    "        .pivot-section { background: #ffffff; padding: 20px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }\n"
-    "        .pivot-section h3 { margin-top: 0; color: #0d47a1; font-size: 1.1em; margin-bottom: 15px; }\n"
-    "        .pivot-table { width: 100%; border-collapse: collapse; text-align: left; }\n"
-    "        .pivot-table th, .pivot-table td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 0.95em; }\n"
-    "        .pivot-table th { background-color: #f1f5f9; color: #334155; }\n"
-    "        .card { background: #ffffff; border-left: 5px solid #1976d2; padding: 20px 25px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }\n"
-    "        .support { color: #d32f2f; font-weight: 600; }\n"
-    "        .pivot { color: #1976d2; font-weight: 600; }\n"
-    "        .resistance { color: #2e7d32; font-weight: 600; }\n"
-    "        ul { padding-left: 18px; margin: 0; }\n"
-    "        li { margin-bottom: 10px; font-size: 0.95em; color: #333; }\n"
+    "        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 850px; margin: 30px auto; padding: 20px; color: #2c3e50; line-height: 1.6; background-color: #f8f9fa; }}\n"
+    "        h1 {{ color: #0d47a1; font-size: 1.8em; margin-bottom: 5px; }}\n"
+    "        .timestamp {{ color: #666; font-weight: 600; font-size: 0.9em; margin-bottom: 15px; }}\n"
+    "        .badge {{ background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold; display: inline-block; margin-bottom: 20px; }}\n"
+    "        hr {{ border: 0; height: 1px; background: #e0e0e0; margin-bottom: 20px; }}\n"
+    "        .time-card {{ background: #ffffff; border-left: 5px solid #2e7d32; padding: 18px 22px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); margin-bottom: 18px; }}\n"
+    "        .time-header {{ font-weight: bold; color: #1b5e20; font-size: 1.05em; margin-bottom: 12px; }}\n"
+    "        .pivot-section {{ background: #ffffff; padding: 20px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }}\n"
+    "        .pivot-section h3 {{ margin-top: 0; color: #0d47a1; font-size: 1.1em; margin-bottom: 15px; }}\n"
+    "        .pivot-table {{ width: 100%; border-collapse: collapse; text-align: left; }}\n"
+    "        .pivot-table th, .pivot-table td {{ padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 0.95em; }}\n"
+    "        .pivot-table th {{ background-color: #f1f5f9; color: #334155; }}\n"
+    "        .card {{ background: #ffffff; border-left: 5px solid #1976d2; padding: 20px 25px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }}\n"
+    "        .support {{ color: #d32f2f; font-weight: 600; }}\n"
+    "        .pivot {{ color: #1976d2; font-weight: 600; }}\n"
+    "        .resistance {{ color: #2e7d32; font-weight: 600; }}\n"
+    "        ul {{ padding-left: 18px; margin: 0; }}\n"
+    "        li {{ margin-bottom: 10px; font-size: 0.95em; color: #333; }}\n"
     "    </style>\n"
     "</head>\n"
     "<body>\n"
     "    <h1>Live Market Feed & Pre-Market Briefing</h1>\n"
     f'    <div class="timestamp">🕒 Last Updated: {ist_time}</div>\n'
-    '    <div class="badge">🔴 15-Minute Detailed Market Stream</div>\n'
+    '    <div class="badge">🔴 15-Minute Live Commentary Stream</div>\n'
     "    <hr>\n"
     '    <h3 style="color:#2e7d32; margin-bottom:15px;">📰 Live Market Commentary (15-Min Stream)</h3>\n'
     f"    {commentary_blocks_html}\n"
