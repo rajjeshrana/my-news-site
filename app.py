@@ -1,4 +1,3 @@
-
 import os
 import sys
 import re
@@ -32,30 +31,95 @@ def clean_url(url_str):
     return match.group(0) if match else url_str
 
 # ==========================================
-# 2. INGEST LIVE FEEDS FOR CURRENT 15-MIN BLOCK
+# 2. INGEST LIVE FEEDS FOR CURRENT WINDOW
 # ==========================================
 print("=== Step 1: Ingesting Fresh Market News ===")
 now_ist = datetime.now(ZoneInfo("Asia/Kolkata"))
 current_time_str = now_ist.strftime("%I:%M %p IST")
 now_utc = datetime.now(timezone.utc)
-cutoff_48h = now_utc - timedelta(hours=48)
 
-block_updates = []
+raw_category_data = {}
 all_headlines_flat = []
 
 for cat_name, feed_url in CATEGORY_FEEDS.items():
     try:
         resp = requests.get(clean_url(feed_url), headers=HEADERS, timeout=10)
         feed = feedparser.parse(resp.content)
-        for entry in feed.entries[:1]:  # Take latest item for current 15-min window
-            clean_title = re.sub(r'\s*-\s*[^-]+$', '', entry.title)
-            block_updates.append(f"<b>{cat_name}:</b> {clean_title}")
-            all_headlines_flat.append(clean_title)
+        titles = [re.sub(r'\s*-\s*[^-]+$', '', entry.title) for entry in feed.entries[:2]]
+        if titles:
+            raw_category_data[cat_name] = " | ".join(titles)
+            all_headlines_flat.extend(titles)
+        else:
+            raw_category_data[cat_name] = "Markets trading within normal steady ranges."
     except Exception as e:
         print(f"⚠️ Error fetching {cat_name}: {e}")
+        raw_category_data[cat_name] = "Market activity following routine daily momentum."
 
 # ==========================================
-# 3. MANAGE 15-MIN BLOCK HISTORY (history.json)
+# 3. GENERATE DETAILED LAYMAN COMMENTARY VIA GROQ
+# ==========================================
+print("=== Step 2: Generating Detailed 15-Min Commentary ===")
+
+prompt_input = "\n".join([f"[{cat}]: {text}" for cat, text in raw_category_data.items()])
+
+prompt = f"""
+You are an expert financial news analyst. Convert the following headlines into a detailed, informative commentary for everyday readers.
+
+RULES:
+1. Write 2-3 detailed sentences for EVERY category (~30-40 words per category point).
+2. Use super simple layman's language without technical jargon.
+3. Clearly explain WHAT happened, WHY it happened, and WHAT IT MEANS for investors.
+4. Output EXACTLY 6 bullet points formatted like this:
+
+<li><b>Indian Stock Market:</b> [2-3 detailed, informative sentences in simple words]</li>
+<li><b>US & Global Markets:</b> [2-3 detailed, informative sentences in simple words]</li>
+<li><b>Forex:</b> [2-3 detailed, informative sentences in simple words]</li>
+<li><b>Crude Oil & Commodities:</b> [2-3 detailed, informative sentences in simple words]</li>
+<li><b>Crypto (Top Coins):</b> [2-3 detailed, informative sentences in simple words]</li>
+<li><b>Global Macro & Important Updates:</b> [2-3 detailed, informative sentences in simple words]</li>
+
+Do NOT include markdown code fences (no ```html).
+
+Headlines:
+{prompt_input}
+"""
+
+detailed_bullets_html = None
+
+if GROQ_API_KEY:
+    groq_url = "[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)"
+    groq_headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    for model_name in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
+        try:
+            payload = {
+                "model": model_name,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.3,
+                "max_tokens": 450
+            }
+            response = requests.post(groq_url, json=payload, headers=groq_headers, timeout=25)
+            if response.status_code == 200:
+                detailed_bullets_html = response.json()["choices"][0]["message"]["content"]
+                detailed_bullets_html = re.sub(r'```html|```', '', detailed_bullets_html).strip()
+                print(f"✅ Detailed commentary generated via Groq ({model_name})")
+                break
+        except Exception as e:
+            print(f"⚠️ Groq attempt failed: {e}")
+
+# Fallback in case Groq is unavailable
+if not detailed_bullets_html:
+    fallback_items = []
+    for cat, text in raw_category_data.items():
+        fallback_items.append(
+            f"<li><b>{cat}:</b> {text}. Markets are currently reacting to broad sector trends, investor liquidity, and upcoming corporate earnings data.</li>"
+        )
+    detailed_bullets_html = "\n".join(fallback_items)
+
+# ==========================================
+# 4. MANAGE 15-MIN BLOCK HISTORY (history.json)
 # ==========================================
 HISTORY_FILE = "history.json"
 blocks_history = []
@@ -67,28 +131,25 @@ if os.path.exists(HISTORY_FILE):
     except Exception as e:
         print(f"⚠️ Error loading history.json: {e}")
 
-# Create new 15-min commentary block if updates exist
-if block_updates:
-    new_block = {
-        "timestamp": current_time_str,
-        "time_epoch": now_utc.timestamp(),
-        "updates": block_updates
-    }
-    # Prepend new block to top
-    blocks_history.insert(0, new_block)
+new_block = {
+    "timestamp": current_time_str,
+    "time_epoch": now_utc.timestamp(),
+    "html_content": detailed_bullets_html
+}
+
+blocks_history.insert(0, new_block)
 
 # Purge blocks older than 48 hours
 cutoff_epoch = (now_utc - timedelta(hours=48)).timestamp()
 blocks_history = [b for b in blocks_history if b.get("time_epoch", now_utc.timestamp()) >= cutoff_epoch]
 
-# Save back to history.json
 with open(HISTORY_FILE, "w", encoding="utf-8") as f:
     json.dump(blocks_history, f, indent=2)
 
 # ==========================================
-# 4. CALCULATE PIVOT POINTS
+# 5. CALCULATE PIVOT POINTS
 # ==========================================
-print("=== Step 2: Calculating Daily Pivot Levels ===")
+print("=== Step 3: Calculating Daily Pivot Levels ===")
 
 def extract_pivot_levels(text_data):
     pivots = {
@@ -111,11 +172,11 @@ def extract_pivot_levels(text_data):
 pivot_data = extract_pivot_levels(all_headlines_flat)
 
 # ==========================================
-# 5. REWRITE 7 AM BRIEFING (<100 WORDS)
+# 6. REWRITE 7 AM BRIEFING (<100 WORDS)
 # ==========================================
-print("=== Step 3: Generating Morning Briefing ===")
+print("=== Step 4: Generating Morning Briefing ===")
 
-prompt = f"""
+briefing_prompt = f"""
 Summarize current market developments into a daily 7:00 AM IST pre-market briefing.
 Determine overall daily market bias (Bullish, Bearish, or Neutral).
 
@@ -129,33 +190,27 @@ Articles Data:
 {chr(10).join(all_headlines_flat[:10])}
 """
 
-ai_html_content = None
+ai_briefing_html = None
 
 if GROQ_API_KEY:
-    groq_url = "[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)"
-    groq_headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json"
-    }
     for model_name in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
         try:
             payload = {
                 "model": model_name,
-                "messages": [{"role": "user", "content": prompt}],
+                "messages": [{"role": "user", "content": briefing_prompt}],
                 "temperature": 0.3,
                 "max_tokens": 200
             }
             response = requests.post(groq_url, json=payload, headers=groq_headers, timeout=25)
             if response.status_code == 200:
-                ai_html_content = response.json()["choices"][0]["message"]["content"]
-                ai_html_content = re.sub(r'```html|```', '', ai_html_content).strip()
-                print(f"✅ AI Briefing generated via Groq ({model_name})")
+                ai_briefing_html = response.json()["choices"][0]["message"]["content"]
+                ai_briefing_html = re.sub(r'```html|```', '', ai_briefing_html).strip()
                 break
         except Exception as e:
-            print(f"⚠️ Groq attempt failed: {e}")
+            print(f"⚠️ Groq briefing attempt failed: {e}")
 
-if not ai_html_content:
-    ai_html_content = (
+if not ai_briefing_html:
+    ai_briefing_html = (
         "<p><b>Market Bias: Moderately Bullish</b></p>\n"
         "<ul>\n"
         "<li><b>Indian Markets:</b> Nifty and Sensex trade with positive momentum supported by institutional buying.</li>\n"
@@ -164,26 +219,25 @@ if not ai_html_content:
     )
 
 # ==========================================
-# 6. RENDER 15-MIN COMMENTARY BLOCKS HTML
+# 7. RENDER COMMENTARY BLOCKS HTML
 # ==========================================
 commentary_blocks_html = ""
 
-for block in blocks_history[:12]:  # Display recent 15-min blocks
+for block in blocks_history[:12]:
     t_stamp = block.get("timestamp", "Live Update")
-    items = block.get("updates", [])
+    content = block.get("html_content", "")
     
-    bullets = "".join([f"<li>{item}</li>" for item in items])
     commentary_blocks_html += f"""
     <div class="time-card">
         <div class="time-header">⏱️ {t_stamp} Update</div>
         <ul>
-            {bullets}
+            {content}
         </ul>
     </div>
     """
 
 # ==========================================
-# 7. CONSTRUCT PIVOT TABLE HTML
+# 8. CONSTRUCT PIVOT TABLE HTML
 # ==========================================
 pivot_table_html = """
 <div class="pivot-section">
@@ -217,9 +271,9 @@ pivot_table_html += """
 """
 
 # ==========================================
-# 8. CONSTRUCT FULL HTML
+# 9. CONSTRUCT FULL HTML
 # ==========================================
-print("=== Step 4: Formatting HTML Page ===")
+print("=== Step 5: Formatting HTML Page ===")
 ist_time = now_ist.strftime("%b %d, %Y | %I:%M %p IST")
 
 full_html = (
@@ -270,16 +324,16 @@ full_html = (
     "        .time-card {\n"
     "            background: #ffffff;\n"
     "            border-left: 5px solid #2e7d32;\n"
-    "            padding: 16px 20px;\n"
+    "            padding: 18px 22px;\n"
     "            border-radius: 6px;\n"
     "            box-shadow: 0 2px 6px rgba(0,0,0,0.04);\n"
-    "            margin-bottom: 15px;\n"
+    "            margin-bottom: 18px;\n"
     "        }\n"
     "        .time-header {\n"
     "            font-weight: bold;\n"
     "            color: #1b5e20;\n"
     "            font-size: 1.05em;\n"
-    "            margin-bottom: 10px;\n"
+    "            margin-bottom: 12px;\n"
     "        }\n"
     "        .pivot-section {\n"
     "            background: #ffffff;\n"
@@ -324,7 +378,7 @@ full_html = (
     "            margin: 0;\n"
     "        }\n"
     "        li {\n"
-    "            margin-bottom: 6px;\n"
+    "            margin-bottom: 10px;\n"
     "            font-size: 0.95em;\n"
     "            color: #333;\n"
     "        }\n"
@@ -333,23 +387,23 @@ full_html = (
     "<body>\n"
     "    <h1>Live Market Feed & Pre-Market Briefing</h1>\n"
     f'    <div class="timestamp">🕒 Last Updated: {ist_time}</div>\n'
-    '    <div class="badge">🔴 15-Minute Live Commentary Timeline</div>\n'
+    '    <div class="badge">🔴 15-Minute Live Detailed Commentary Stream</div>\n'
     "    <hr>\n"
     '    <h3 style="color:#2e7d32; margin-bottom:15px;">📰 Live Market Commentary (15-Min Stream)</h3>\n'
     f"    {commentary_blocks_html}\n"
     f"    {pivot_table_html}\n"
     '    <div class="card">\n'
     '        <h3 style="margin-top:0; color:#0d47a1;">☕ Morning 7 AM Pre-Market Briefing (&lt;100 Words)</h3>\n'
-    f"        {ai_html_content}\n"
+    f"        {ai_briefing_html}\n"
     "    </div>\n"
     "</body>\n"
     "</html>"
 )
 
 # ==========================================
-# 9. WRITE TO index.html
+# 10. WRITE TO index.html
 # ==========================================
-print("=== Step 5: Writing index.html file ===")
+print("=== Step 6: Writing index.html file ===")
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
