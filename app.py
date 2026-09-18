@@ -4,17 +4,14 @@ import requests
 import feedparser
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from github import Github
 
 # ==========================================
-# 1. SETUP & SECRETS VALIDATION
+# 1. SECRETS VALIDATION
 # ==========================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-GITHUB_REPO = os.getenv("GITHUB_REPO")
 
-if not GROQ_API_KEY or not GITHUB_TOKEN or not GITHUB_REPO:
-    print("❌ ERROR: Missing required environment variables.")
+if not GROQ_API_KEY:
+    print("❌ ERROR: Missing GROQ_API_KEY secret.")
     sys.exit(1)
 
 # RSS Feeds for Financial Market Updates
@@ -131,30 +128,10 @@ full_html = f"""<!DOCTYPE html>
 """
 
 # ==========================================
-# 5. PUBLISH TO GITHUB PAGES
+# 5. WRITE DIRECTLY TO index.html FILE
 # ==========================================
-print("=== Step 4: Publishing Website Update to GitHub Pages ===")
-gh = Github(GITHUB_TOKEN)
-repo = gh.get_repo(GITHUB_REPO)
+print("=== Step 4: Writing index.html file ===")
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(full_html)
 
-file_path = "index.html"
-commit_message = f"Auto-update market report: {ist_time}"
-
-try:
-    contents = repo.get_contents(file_path, ref="main")
-    repo.update_file(
-        path=contents.path,
-        message=commit_message,
-        content=full_html,
-        sha=contents.sha,
-        branch="main"
-    )
-except Exception:
-    repo.create_file(
-        path=file_path,
-        message=commit_message,
-        content=full_html,
-        branch="main"
-    )
-
-print("✅ Successfully updated live website on GitHub Pages!")
+print("✅ Successfully generated index.html!")
