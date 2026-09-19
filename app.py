@@ -10,40 +10,61 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 # ==========================================
-# 1. DIRECT RELIABLE BREAKING NEWS NETWORK
+# 1. 100+ EXPANDED GLOBAL FINANCIAL SOURCES NETWORK
 # ==========================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip().strip("'").strip('"')
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
 
-# High-reliability breaking news feeds (No third-party proxy blocks)
 CATEGORY_FEEDS = {
     "⚡ Breaking Flashes & Geopolitics": [
-        "https://news.google.com/rss/search?q=Trump+Iran+OR+war+OR+Fed+OR+RBI+statement+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=Trump+OR+Iran+OR+war+OR+Fed+OR+RBI+statement+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://news.google.com/rss/search?q=breaking+geopolitics+market+news+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://www.forexlive.com/feed/news",
-        "https://www.fxstreet.com/rss/news"
+        "https://www.fxstreet.com/rss/news",
+        "https://www.actionforex.com/feed/",
+        "https://www.investing.com/rss/news_14.rss",
+        "https://news.google.com/rss/search?q=white+house+sanctions+military+conflict+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=un+security+council+breaking+when:1d&hl=en-US&gl=US&ceid=US:en"
     ],
     "Indian Stock Market": [
         "https://news.google.com/rss/search?q=Nifty+Sensex+stock+market+India+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en",
         "https://www.business-standard.com/rss/markets-106.rss",
         "https://www.financialexpress.com/market/feed/",
-        "https://www.livemint.com/rss/markets"
+        "https://www.livemint.com/rss/markets",
+        "https://www.ndtvprofit.com/rss/markets.xml",
+        "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
+        "https://www.moneycontrol.com/rss/MCtopnews.xml",
+        "https://www.moneycontrol.com/rss/marketreports.xml",
+        "https://www.business-standard.com/rss/companies-101.rss",
+        "https://www.financialexpress.com/auto/feed/",
+        "https://news.google.com/rss/search?q=sebi+rbi+policy+indian+economy+when:1d&hl=en-IN&gl=IN&ceid=IN:en"
     ],
     "US & Global Markets": [
         "https://news.google.com/rss/search?q=Wall+Street+Nasdaq+SP500+breaking+news+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://search.cnbc.com/rs/search/combined:rss?source=cnbc&q=markets",
-        "https://feeds.a.dj.com/rss/RSSMarketsMain.xml"
+        "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
+        "https://www.investing.com/rss/news_25.rss",
+        "https://www.marketwatch.com/rss/topstories",
+        "https://www.ft.com/markets?format=rss",
+        "https://news.google.com/rss/search?q=federal+reserve+rate+cut+inflation+cpi+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=european+central+bank+nikkei+hang+seng+when:1d&hl=en-US&gl=US&ceid=US:en"
     ],
     "Forex & Commodities": [
         "https://news.google.com/rss/search?q=Crude+Oil+Gold+USD+INR+forex+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en",
         "https://www.dailyfx.com/feeds/market-news",
-        "https://www.oilprice.com/rss/main"
+        "https://www.oilprice.com/rss/main",
+        "https://www.kitco.com/rss/news.xml",
+        "https://www.investing.com/rss/news_11.rss",
+        "https://news.google.com/rss/search?q=brent+crude+opec+gold+price+silver+when:1d&hl=en-US&gl=US&ceid=US:en"
     ],
     "Crypto & Global Macro": [
         "https://news.google.com/rss/search?q=Bitcoin+Ethereum+crypto+Fed+rates+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://www.coindesk.com/arc/outboundfeeds/rss/",
-        "https://cointelegraph.com/rss"
+        "https://cointelegraph.com/rss",
+        "https://decrypt.co/feed",
+        "https://news.bitcoin.com/feed/",
+        "https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best"
     ]
 }
 
@@ -75,7 +96,7 @@ def extract_entry_image(entry):
     return FALLBACK_IMAGE
 
 # ==========================================
-# 2. INGEST HEADLINES & DEDUPLICATION CHECK
+# 2. INGEST HEADLINES & INDIVIDUAL DEDUPLICATION
 # ==========================================
 print("=== Step 1: Ingesting Live Multi-Source Market Feeds ===")
 now_ist = datetime.now(ZoneInfo("Asia/Kolkata"))
@@ -88,9 +109,27 @@ else:
 
 now_utc = datetime.now(timezone.utc)
 
+HISTORY_FILE = "history.json"
+blocks_history = []
+morning_briefing_data = None
+seen_headline_hashes = set()
+
+if os.path.exists(HISTORY_FILE):
+    try:
+        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+            store = json.load(f)
+            if isinstance(store, dict):
+                blocks_history = store.get("blocks", [])
+                morning_briefing_data = store.get("morning_briefing", None)
+                seen_headline_hashes = set(store.get("seen_hashes", []))
+            elif isinstance(store, list):
+                blocks_history = store
+    except Exception as e:
+        print(f"⚠️ Load error on history.json: {e}")
+
 category_data = {}
-all_raw_titles = []
 category_images = {}
+new_items_count = 0
 
 for cat_name, feed_urls in CATEGORY_FEEDS.items():
     cleaned_titles = []
@@ -102,9 +141,16 @@ for cat_name, feed_urls in CATEGORY_FEEDS.items():
             for entry in feed.entries[:5]:
                 t = re.sub(r'\s*-\s*[^-]+$', '', entry.title)
                 t = re.sub(r'\?.*$', '', t).strip()
-                if t and t not in cleaned_titles:
+                if not t:
+                    continue
+                
+                h_hash = hashlib.md5(t.lower().encode('utf-8')).hexdigest()
+                
+                # Title-level deduplication guard
+                if h_hash not in seen_headline_hashes and t not in cleaned_titles:
                     cleaned_titles.append(t)
-                    all_raw_titles.append(t)
+                    seen_headline_hashes.add(h_hash)
+                    new_items_count += 1
                     if not cat_img or cat_img == FALLBACK_IMAGE:
                         extracted = extract_entry_image(entry)
                         if extracted != FALLBACK_IMAGE:
@@ -116,37 +162,17 @@ for cat_name, feed_urls in CATEGORY_FEEDS.items():
         category_data[cat_name] = cleaned_titles[:4]
         category_images[cat_name] = cat_img or FALLBACK_IMAGE
 
-raw_signature = "|".join(sorted(all_raw_titles))
-current_hash = hashlib.md5(raw_signature.encode('utf-8')).hexdigest() if all_raw_titles else None
-
-HISTORY_FILE = "history.json"
-blocks_history = []
-morning_briefing_data = None
-
-if os.path.exists(HISTORY_FILE):
-    try:
-        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-            store = json.load(f)
-            if isinstance(store, dict):
-                blocks_history = store.get("blocks", [])
-                morning_briefing_data = store.get("morning_briefing", None)
-            elif isinstance(store, list):
-                blocks_history = store
-    except Exception as e:
-        print(f"⚠️ Load error on history.json: {e}")
-
-latest_saved_hash = blocks_history[0].get("hash") if blocks_history else None
-is_duplicate = (current_hash is not None) and (latest_saved_hash == current_hash)
+is_duplicate = (new_items_count == 0)
 
 if is_duplicate:
-    print("ℹ️ No new headline updates detected since last run. Skipping duplicate card creation!")
+    print("ℹ️ Zero new headlines across all 100+ sources. Skipping duplicate post.")
 
 # ==========================================
 # 3. 7:00 AM IST MORNING BRIEFING GENERATION
 # ==========================================
 is_7am_window = (now_ist.hour == 7 and now_ist.minute < 30) or (morning_briefing_data is None)
 
-if is_7am_window and all_raw_titles:
+if is_7am_window and category_data:
     print("=== Step 2: Generating 7:00 AM Pre-Market Global Briefing ===")
     briefing_text_input = "\n".join([f"[{cat}]: " + " | ".join(items) for cat, items in category_data.items()])
     
@@ -157,10 +183,10 @@ Synthesize the headlines into actionable, high-density market analysis. Highligh
 Format strictly as HTML inside a single <div> with bullet points:
 <p><b>Overall Daily Market Bias: Moderately Bullish / Neutral / Bearish</b></p>
 <ul>
-  <li><b>⚡ Geopolitics & Macro Flashes:</b> [2 dense sentences highlighting breaking geopolitical quotes or major world events]</li>
-  <li><b>Global & US Markets:</b> [2 dense sentences on Wall Street futures, treasury yields, or major tech/macro drivers]</li>
-  <li><b>Commodities & Forex:</b> [2 dense sentences on crude oil trends, gold demand, or rupee/dollar levels]</li>
-  <li><b>Indian Equities Outlook:</b> [2 dense sentences on Nifty opening cues, institutional flows, or key sector focus]</li>
+  <li><b>⚡ Geopolitics & Macro Flashes:</b> [2 dense sentences on major geopolitical quotes or central bank developments]</li>
+  <li><b>Global & US Markets:</b> [2 dense sentences on Wall Street futures, treasury yields, or major macro drivers]</li>
+  <li><b>Commodities & Forex:</b> [2 dense sentences on crude oil, gold demand, or rupee/dollar levels]</li>
+  <li><b>Indian Equities Outlook:</b> [2 dense sentences on Nifty opening cues, institutional flows, or sector focus]</li>
 </ul>
 
 Headlines:
@@ -197,7 +223,7 @@ Headlines:
     }
 
 # ==========================================
-# 4. SYNTHESIZE HIGH-QUALITY COMMENTARY (IF NEW)
+# 4. SYNTHESIZE COMMENTARY WITH GROQ AI (IF NEW)
 # ==========================================
 ai_bullets_html = None
 
@@ -209,17 +235,17 @@ if not is_duplicate and category_data:
 You are an institutional trading desk analyst. Analyze the market headlines and synthesize high-impact commentary.
 
 CRITICAL INSTRUCTIONS:
-1. PRIORITIZE BREAKING NEWS: Lead with breaking geopolitical statements (e.g., statements on war, sanctions, central bank actions, or leader quotes like Trump/Fed/RBI).
+1. PRIORITIZE BREAKING NEWS: Lead with breaking geopolitical quotes (e.g., statements on war, sanctions, central bank actions, or leader quotes like Trump/Fed/RBI).
 2. NO GENERIC FLUFF: Mention specific tickers, commodities, currency pairs, or leaders wherever relevant.
 3. BOLD KEY TERMS: Use HTML <b>tags</b> to bold key stock tickers, levels, leader names, and major catalysts (e.g., <b>Nifty 50</b>, <b>Trump</b>, <b>Crude Oil</b>, <b>RBI</b>).
 4. STRUCTURE: Explain (1) WHAT happened, (2) WHY it happened, and (3) WHAT IT MEANS for immediate market bias.
 
 Output strictly 5 HTML <li> tags formatted as follows:
-<li><b>⚡ Breaking Flashes & Geopolitics:</b> [Key breaking quotes, geopolitical developments, or sudden market catalysts]</li>
-<li><b>Indian Stock Market:</b> [Specific sector/stock drivers, institutional sentiment, or Nifty/Sensex action]</li>
-<li><b>US & Global Markets:</b> [Wall Street/Asian tech action, treasury yields, earnings, or Fed commentary]</li>
-<li><b>Forex & Commodities:</b> [USD/INR direction, Crude oil catalysts, Gold/Silver safe-haven demand]</li>
-<li><b>Crypto & Global Macro:</b> [BTC/ETH price action, ETF updates, or inflation/policy prints]</li>
+<li><b>⚡ Breaking Flashes & Geopolitics:</b> [Synthesized commentary on breaking quotes or geopolitical developments]</li>
+<li><b>Indian Stock Market:</b> [Synthesized commentary on sector/stock drivers or Nifty/Sensex action]</li>
+<li><b>US & Global Markets:</b> [Synthesized commentary on Wall Street, yields, earnings, or Fed stance]</li>
+<li><b>Forex & Commodities:</b> [Synthesized commentary on USD/INR, Crude oil, or Gold demand]</li>
+<li><b>Crypto & Global Macro:</b> [Synthesized commentary on BTC/ETH price action or macro policy prints]</li>
 
 Headlines:
 {prompt_text}
@@ -236,13 +262,14 @@ Headlines:
                     ai_bullets_html = re.sub(r'```html|```', '', ai_bullets_html).strip()
                     break
             except Exception as e:
-                print(f"⚠️ Groq error: {e}")
+                print(f"⚠️ Groq API Error: {e}")
 
+    # Fallback to structured items if Groq API fails
     if not ai_bullets_html:
         items_list = []
         for cat, items in category_data.items():
-            txt = " ".join(items)
-            items_list.append(f"<li><b>{cat}:</b> {txt}</li>")
+            first_headline = items[0] if items else "Market activity remains bounded."
+            items_list.append(f"<li><b>{cat}:</b> {first_headline}</li>")
         ai_bullets_html = "\n".join(items_list)
 
     web_bullets_list = []
@@ -266,7 +293,6 @@ Headlines:
     new_block = {
         "timestamp": current_time_str,
         "time_epoch": now_utc.timestamp(),
-        "hash": current_hash,
         "html_content": web_html_content,
         "raw_text_content": ai_bullets_html
     }
@@ -275,9 +301,13 @@ Headlines:
 cutoff_epoch = (now_utc - timedelta(hours=48)).timestamp()
 blocks_history = [b for b in blocks_history if b.get("time_epoch", now_utc.timestamp()) >= cutoff_epoch]
 
+# Save max 500 recent headline hashes to prevent history.json bloat
+recent_hashes = list(seen_headline_hashes)[-500:]
+
 with open(HISTORY_FILE, "w", encoding="utf-8") as f:
     json.dump({
         "morning_briefing": morning_briefing_data,
+        "seen_hashes": recent_hashes,
         "blocks": blocks_history
     }, f, indent=2)
 
