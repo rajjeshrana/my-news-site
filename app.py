@@ -10,48 +10,40 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 # ==========================================
-# 1. EXPANDED INSTANT BREAKING FLASHES & GLOBAL RSS NETWORK
+# 1. DIRECT RELIABLE BREAKING NEWS NETWORK
 # ==========================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip().strip("'").strip('"')
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
 
+# High-reliability breaking news feeds (No third-party proxy blocks)
 CATEGORY_FEEDS = {
     "⚡ Breaking Flashes & Geopolitics": [
-        "[https://xcancel.com/financialjuice/rss](https://xcancel.com/financialjuice/rss)",
-        "[https://xcancel.com/DeitaOne/rss](https://xcancel.com/DeitaOne/rss)",
-        "[https://xcancel.com/ForexLive/rss](https://xcancel.com/ForexLive/rss)",
-        "[https://xcancel.com/unusual_whales/rss](https://xcancel.com/unusual_whales/rss)",
-        "[https://news.google.com/rss/search?q=breaking+trump+iran+war+fed+rbi+statement+when:1d&hl=en-US&gl=US&ceid=US:en](https://news.google.com/rss/search?q=breaking+trump+iran+war+fed+rbi+statement+when:1d&hl=en-US&gl=US&ceid=US:en)",
-        "[https://www.forexlive.com/feed/news](https://www.forexlive.com/feed/news)",
-        "[https://www.fxstreet.com/rss/news](https://www.fxstreet.com/rss/news)"
+        "https://news.google.com/rss/search?q=Trump+Iran+OR+war+OR+Fed+OR+RBI+statement+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=breaking+geopolitics+market+news+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "https://www.forexlive.com/feed/news",
+        "https://www.fxstreet.com/rss/news"
     ],
     "Indian Stock Market": [
-        "[https://news.google.com/rss/search?q=nifty+sensex+stock+market+india+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en](https://news.google.com/rss/search?q=nifty+sensex+stock+market+india+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en)",
-        "[https://www.business-standard.com/rss/markets-106.rss](https://www.business-standard.com/rss/markets-106.rss)",
-        "[https://www.financialexpress.com/market/feed/](https://www.financialexpress.com/market/feed/)",
-        "[https://www.livemint.com/rss/markets](https://www.livemint.com/rss/markets)",
-        "[https://www.ndtvprofit.com/rss/markets.xml](https://www.ndtvprofit.com/rss/markets.xml)",
-        "[https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms](https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms)"
+        "https://news.google.com/rss/search?q=Nifty+Sensex+stock+market+India+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en",
+        "https://www.business-standard.com/rss/markets-106.rss",
+        "https://www.financialexpress.com/market/feed/",
+        "https://www.livemint.com/rss/markets"
     ],
     "US & Global Markets": [
-        "[https://news.google.com/rss/search?q=wall+street+nasdaq+sp500+dow+jones+breaking+when:1d&hl=en-US&gl=US&ceid=US:en](https://news.google.com/rss/search?q=wall+street+nasdaq+sp500+dow+jones+breaking+when:1d&hl=en-US&gl=US&ceid=US:en)",
-        "[https://search.cnbc.com/rs/search/combined:rss?source=cnbc&q=markets](https://search.cnbc.com/rs/search/combined:rss?source=cnbc&q=markets)",
-        "[https://feeds.a.dj.com/rss/RSSMarketsMain.xml](https://feeds.a.dj.com/rss/RSSMarketsMain.xml)",
-        "[https://www.investing.com/rss/news_25.rss](https://www.investing.com/rss/news_25.rss)",
-        "[https://www.marketwatch.com/rss/topstories](https://www.marketwatch.com/rss/topstories)"
+        "https://news.google.com/rss/search?q=Wall+Street+Nasdaq+SP500+breaking+news+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "https://search.cnbc.com/rs/search/combined:rss?source=cnbc&q=markets",
+        "https://feeds.a.dj.com/rss/RSSMarketsMain.xml"
     ],
     "Forex & Commodities": [
-        "[https://news.google.com/rss/search?q=crude+oil+gold+usd+inr+forex+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en](https://news.google.com/rss/search?q=crude+oil+gold+usd+inr+forex+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en)",
-        "[https://www.dailyfx.com/feeds/market-news](https://www.dailyfx.com/feeds/market-news)",
-        "[https://www.oilprice.com/rss/main](https://www.oilprice.com/rss/main)",
-        "[https://www.kitco.com/rss/news.xml](https://www.kitco.com/rss/news.xml)"
+        "https://news.google.com/rss/search?q=Crude+Oil+Gold+USD+INR+forex+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en",
+        "https://www.dailyfx.com/feeds/market-news",
+        "https://www.oilprice.com/rss/main"
     ],
     "Crypto & Global Macro": [
-        "[https://news.google.com/rss/search?q=bitcoin+ethereum+crypto+fed+interest+rate+when:1d&hl=en-US&gl=US&ceid=US:en](https://news.google.com/rss/search?q=bitcoin+ethereum+crypto+fed+interest+rate+when:1d&hl=en-US&gl=US&ceid=US:en)",
-        "[https://www.coindesk.com/arc/outboundfeeds/rss/](https://www.coindesk.com/arc/outboundfeeds/rss/)",
-        "[https://cointelegraph.com/rss](https://cointelegraph.com/rss)",
-        "[https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best](https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best)"
+        "https://news.google.com/rss/search?q=Bitcoin+Ethereum+crypto+Fed+rates+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "https://www.coindesk.com/arc/outboundfeeds/rss/",
+        "https://cointelegraph.com/rss"
     ]
 }
 
@@ -59,23 +51,28 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
+FALLBACK_IMAGE = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80"
+
 def clean_url(url_str):
     match = re.search(r'https?://[^\s\]\)]+', str(url_str))
     return match.group(0) if match else url_str
 
 def extract_entry_image(entry):
-    if 'media_content' in entry and entry.media_content:
-        for media in entry.media_content:
-            if 'url' in media and media['url']:
-                return media['url']
-    if 'media_thumbnail' in entry and entry.media_thumbnail:
-        if isinstance(entry.media_thumbnail, list) and len(entry.media_thumbnail) > 0:
-            return entry.media_thumbnail[0].get('url', '')
-    if 'enclosures' in entry and entry.enclosures:
-        for enc in entry.enclosures:
-            if enc.get('type', '').startswith('image/') and 'href' in enc:
-                return enc['href']
-    return "[https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80](https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80)"
+    try:
+        if 'media_content' in entry and entry.media_content:
+            for media in entry.media_content:
+                if 'url' in media and media['url']:
+                    return media['url']
+        if 'media_thumbnail' in entry and entry.media_thumbnail:
+            if isinstance(entry.media_thumbnail, list) and len(entry.media_thumbnail) > 0:
+                return entry.media_thumbnail[0].get('url', '')
+        if 'enclosures' in entry and entry.enclosures:
+            for enc in entry.enclosures:
+                if enc.get('type', '').startswith('image/') and 'href' in enc:
+                    return enc['href']
+    except Exception:
+        pass
+    return FALLBACK_IMAGE
 
 # ==========================================
 # 2. INGEST HEADLINES & DEDUPLICATION CHECK
@@ -108,14 +105,16 @@ for cat_name, feed_urls in CATEGORY_FEEDS.items():
                 if t and t not in cleaned_titles:
                     cleaned_titles.append(t)
                     all_raw_titles.append(t)
-                    if not cat_img:
-                        cat_img = extract_entry_image(entry)
+                    if not cat_img or cat_img == FALLBACK_IMAGE:
+                        extracted = extract_entry_image(entry)
+                        if extracted != FALLBACK_IMAGE:
+                            cat_img = extracted
         except Exception as e:
             print(f"⚠️ Error fetching {cat_name} from {feed_url}: {e}")
             
     if cleaned_titles:
         category_data[cat_name] = cleaned_titles[:4]
-        category_images[cat_name] = cat_img or "[https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80](https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80)"
+        category_images[cat_name] = cat_img or FALLBACK_IMAGE
 
 raw_signature = "|".join(sorted(all_raw_titles))
 current_hash = hashlib.md5(raw_signature.encode('utf-8')).hexdigest() if all_raw_titles else None
@@ -170,7 +169,7 @@ Headlines:
     
     briefing_html = None
     if GROQ_API_KEY:
-        groq_url = "[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)"
+        groq_url = "https://api.groq.com/openai/v1/chat/completions"
         groq_headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
         try:
             payload = {"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": briefing_prompt}], "temperature": 0.3}
@@ -210,7 +209,7 @@ if not is_duplicate and category_data:
 You are an institutional trading desk analyst. Analyze the market headlines and synthesize high-impact commentary.
 
 CRITICAL INSTRUCTIONS:
-1. PRIORITIZE BREAKING NEWS: Lead with breaking geopolitical quotes (e.g., statements on war, sanctions, central bank actions, or leader quotes like Trump/Fed/RBI).
+1. PRIORITIZE BREAKING NEWS: Lead with breaking geopolitical statements (e.g., statements on war, sanctions, central bank actions, or leader quotes like Trump/Fed/RBI).
 2. NO GENERIC FLUFF: Mention specific tickers, commodities, currency pairs, or leaders wherever relevant.
 3. BOLD KEY TERMS: Use HTML <b>tags</b> to bold key stock tickers, levels, leader names, and major catalysts (e.g., <b>Nifty 50</b>, <b>Trump</b>, <b>Crude Oil</b>, <b>RBI</b>).
 4. STRUCTURE: Explain (1) WHAT happened, (2) WHY it happened, and (3) WHAT IT MEANS for immediate market bias.
@@ -226,7 +225,7 @@ Headlines:
 {prompt_text}
 """
     if GROQ_API_KEY:
-        groq_url = "[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)"
+        groq_url = "https://api.groq.com/openai/v1/chat/completions"
         groq_headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
         for model in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
             try:
@@ -243,7 +242,7 @@ Headlines:
         items_list = []
         for cat, items in category_data.items():
             txt = " ".join(items)
-            items_list.append(f"<li><b>{cat}:</b> {txt}. Key levels remain intact as market participants evaluate emerging catalysts.</li>")
+            items_list.append(f"<li><b>{cat}:</b> {txt}</li>")
         ai_bullets_html = "\n".join(items_list)
 
     web_bullets_list = []
@@ -251,11 +250,11 @@ Headlines:
     
     cat_keys = list(category_images.keys())
     for idx, b_text in enumerate(bullets_matches):
-        img_url = category_images.get(cat_keys[idx if idx < len(cat_keys) else 0], "[https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80](https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80)")
+        img_url = category_images.get(cat_keys[idx if idx < len(cat_keys) else 0], FALLBACK_IMAGE)
         card_item = f"""
         <li>
             <div class="news-item-box">
-                <img src="{img_url}" class="news-thumb" alt="market news">
+                <img src="{img_url}" class="news-thumb" alt="market news" onerror="this.onerror=null;this.src='{FALLBACK_IMAGE}';">
                 <div class="news-text-content">{b_text}</div>
             </div>
         </li>
@@ -294,10 +293,10 @@ def send_telegram_message(time_str, html_bullets):
     message_body = (
         f"📊 <b>Live Market Commentary ({time_str})</b>\n\n"
         f"{text_content}\n"
-        f"🌐 <a href='[https://rajjeshrana.github.io/my-news-site/](https://rajjeshrana.github.io/my-news-site/)'>View Terminal Dashboard</a>"
+        f"🌐 <a href='https://rajjeshrana.github.io/my-news-site/'>View Terminal Dashboard</a>"
     )
 
-    url = f"[https://api.telegram.org/bot](https://api.telegram.org/bot){TELEGRAM_BOT_TOKEN}/sendMessage"
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "text": message_body,
@@ -384,7 +383,7 @@ css_styles = """
     ul { padding-left: 0; list-style: none; margin: 0; }
     li { margin-bottom: 16px; font-size: 1em; color: #2c3e50; }
     .news-item-box { display: flex; align-items: flex-start; gap: 15px; background: #fdfdfd; padding: 10px; border-radius: 6px; border: 1px solid #f0f0f0; }
-    .news-thumb { width: 75px; height: 75px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+    .news-thumb { width: 75px; height: 75px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background-color: #e0e0e0; }
     .news-text-content { flex-grow: 1; font-size: 0.98em; line-height: 1.5; }
 """
 
