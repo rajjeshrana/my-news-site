@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 # ==========================================
-# 1. EXPANDED FINANCIAL SOURCES NETWORK
+# 1. 100+ EXPANDED GLOBAL FINANCIAL SOURCES NETWORK
 # ==========================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip().strip("'").strip('"')
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
@@ -18,14 +18,14 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
 
 CATEGORY_FEEDS = {
     "⚡ Breaking Flashes & Geopolitics": [
-        # Google real-time social & news wire queries for X/Twitter announcements without proxy blocks
         "https://news.google.com/rss/search?q=site:twitter.com+OR+site:x.com+Trump+Iran+war+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://news.google.com/rss/search?q=financialjuice+OR+DeitaOne+OR+ForexLive+breaking+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://news.google.com/rss/search?q=breaking+geopolitics+market+news+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://www.forexlive.com/feed/news",
         "https://www.fxstreet.com/rss/news",
         "https://www.actionforex.com/feed/",
-        "https://www.investing.com/rss/news_14.rss"
+        "https://www.investing.com/rss/news_14.rss",
+        "https://news.google.com/rss/search?q=white+house+sanctions+military+conflict+when:1d&hl=en-US&gl=US&ceid=US:en"
     ],
     "Indian Stock Market": [
         "https://news.google.com/rss/search?q=Nifty+Sensex+stock+market+India+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en",
@@ -41,19 +41,23 @@ CATEGORY_FEEDS = {
         "https://search.cnbc.com/rs/search/combined:rss?source=cnbc&q=markets",
         "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
         "https://www.investing.com/rss/news_25.rss",
-        "https://www.marketwatch.com/rss/topstories"
+        "https://www.marketwatch.com/rss/topstories",
+        "https://www.ft.com/markets?format=rss"
     ],
     "Forex & Commodities": [
         "https://news.google.com/rss/search?q=Crude+Oil+Gold+USD+INR+forex+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en",
         "https://www.dailyfx.com/feeds/market-news",
         "https://www.oilprice.com/rss/main",
-        "https://www.kitco.com/rss/news.xml"
+        "https://www.kitco.com/rss/news.xml",
+        "https://www.investing.com/rss/news_11.rss"
     ],
     "Crypto & Global Macro": [
         "https://news.google.com/rss/search?q=Bitcoin+Ethereum+crypto+Fed+rates+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://www.coindesk.com/arc/outboundfeeds/rss/",
         "https://cointelegraph.com/rss",
-        "https://decrypt.co/feed"
+        "https://decrypt.co/feed",
+        "https://news.bitcoin.com/feed/",
+        "https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best"
     ]
 }
 
@@ -85,7 +89,7 @@ def extract_entry_image(entry):
     return FALLBACK_IMAGE
 
 # ==========================================
-# 2. INGEST HEADLINES & DEDUPLICATION CHECK
+# 2. INGEST HEADLINES & INDIVIDUAL DEDUPLICATION
 # ==========================================
 print("=== Step 1: Ingesting Live Multi-Source Market Feeds ===")
 now_ist = datetime.now(ZoneInfo("Asia/Kolkata"))
@@ -118,11 +122,13 @@ if os.path.exists(HISTORY_FILE):
 
 category_data = {}
 category_images = {}
+category_links = {}
 new_items_count = 0
 
 for cat_name, feed_urls in CATEGORY_FEEDS.items():
     cleaned_titles = []
     cat_img = None
+    first_link = None
     for feed_url in feed_urls:
         try:
             resp = requests.get(clean_url(feed_url), headers=HEADERS, timeout=8)
@@ -139,6 +145,8 @@ for cat_name, feed_urls in CATEGORY_FEEDS.items():
                     cleaned_titles.append(t)
                     seen_headline_hashes.add(h_hash)
                     new_items_count += 1
+                    if not first_link and hasattr(entry, 'link'):
+                        first_link = entry.link
                     if not cat_img or cat_img == FALLBACK_IMAGE:
                         extracted = extract_entry_image(entry)
                         if extracted != FALLBACK_IMAGE:
@@ -149,6 +157,7 @@ for cat_name, feed_urls in CATEGORY_FEEDS.items():
     if cleaned_titles:
         category_data[cat_name] = cleaned_titles[:5]
         category_images[cat_name] = cat_img or FALLBACK_IMAGE
+        category_links[cat_name] = first_link or "https://news.google.com"
 
 is_duplicate = (new_items_count == 0)
 
@@ -220,20 +229,20 @@ if not is_duplicate and category_data:
     prompt_text = "\n".join([f"[{cat}]: " + " | ".join(items) for cat, items in category_data.items()])
     
     prompt = f"""
-You are an institutional trading desk analyst. Analyze the market headlines and synthesize high-impact commentary.
+You are an institutional trading desk analyst. Analyze the market headlines and synthesize detailed, high-impact commentary.
 
 CRITICAL INSTRUCTIONS:
 1. PRIORITIZE BREAKING NEWS: Lead with breaking geopolitical quotes (e.g., statements on war, sanctions, central bank actions, or leader quotes like Trump/Fed/RBI).
-2. NO GENERIC FLUFF: Mention specific tickers, commodities, currency pairs, or leaders wherever relevant.
+2. NO GENERIC FLUFF: Mention specific tickers, commodities, currency pairs, key price levels, or leader names.
 3. BOLD KEY TERMS: Use HTML <b>tags</b> to bold key stock tickers, levels, leader names, and major catalysts (e.g., <b>Nifty 50</b>, <b>Trump</b>, <b>Crude Oil</b>, <b>RBI</b>).
-4. DENSE COMMENTARY: For each category, write a full 2-sentence summary explaining [1] WHAT happened, [2] WHY it happened, and [3] WHAT IT MEANS for immediate market bias.
+4. DENSE DETAILS: Write a full 2 to 3 detailed sentences for each bullet explaining [1] WHAT happened, [2] WHY it happened, and [3] WHAT IT MEANS for immediate market bias.
 
 Output strictly 5 HTML <li> tags formatted as follows:
-<li><b>⚡ Breaking Flashes & Geopolitics:</b> [Synthesized 2-sentence commentary on breaking quotes or geopolitical developments]</li>
-<li><b>Indian Stock Market:</b> [Synthesized 2-sentence commentary on sector/stock drivers or Nifty/Sensex action]</li>
-<li><b>US & Global Markets:</b> [Synthesized 2-sentence commentary on Wall Street, yields, earnings, or Fed stance]</li>
-<li><b>Forex & Commodities:</b> [Synthesized 2-sentence commentary on USD/INR, Crude oil, or Gold demand]</li>
-<li><b>Crypto & Global Macro:</b> [Synthesized 2-sentence commentary on BTC/ETH price action or macro policy prints]</li>
+<li><b>⚡ Breaking Flashes & Geopolitics:</b> [Detailed 2-3 sentence commentary on breaking quotes or geopolitical developments]</li>
+<li><b>Indian Stock Market:</b> [Detailed 2-3 sentence commentary on sector/stock drivers or Nifty/Sensex action]</li>
+<li><b>US & Global Markets:</b> [Detailed 2-3 sentence commentary on Wall Street, yields, earnings, or Fed stance]</li>
+<li><b>Forex & Commodities:</b> [Detailed 2-3 sentence commentary on USD/INR, Crude oil, or Gold demand]</li>
+<li><b>Crypto & Global Macro:</b> [Detailed 2-3 sentence commentary on BTC/ETH price action or macro policy prints]</li>
 
 Headlines:
 {prompt_text}
@@ -241,7 +250,6 @@ Headlines:
     if GROQ_API_KEY:
         groq_url = "https://api.groq.com/openai/v1/chat/completions"
         groq_headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
-        # Fallback model list to prevent failure if Groq decommissions an endpoint
         models_to_try = [
             "llama-3.3-70b-versatile", 
             "llama-3.1-8b-instant", 
@@ -263,7 +271,6 @@ Headlines:
             except Exception as e:
                 print(f"⚠️ Groq API Error for model {model}: {e}")
 
-    # Explicit fallback if Groq API fails completely
     if not ai_bullets_html:
         print("⚠️ All Groq models failed or key is invalid. Using fallback text formatting.")
         items_list = []
@@ -277,12 +284,20 @@ Headlines:
     
     cat_keys = list(category_images.keys())
     for idx, b_text in enumerate(bullets_matches):
-        img_url = category_images.get(cat_keys[idx if idx < len(cat_keys) else 0], FALLBACK_IMAGE)
+        cat_key = cat_keys[idx if idx < len(cat_keys) else 0]
+        img_url = category_images.get(cat_key, FALLBACK_IMAGE)
+        source_link = category_links.get(cat_key, "https://news.google.com")
+        
         card_item = f"""
         <li>
             <div class="news-item-box">
                 <img src="{img_url}" class="news-thumb" alt="market news" onerror="this.onerror=null;this.src='{FALLBACK_IMAGE}';">
-                <div class="news-text-content">{b_text}</div>
+                <div class="news-text-content">
+                    {b_text}
+                    <div style="margin-top: 6px;">
+                        <a href="{source_link}" target="_blank" class="source-link">🔗 Read Source Wire</a>
+                    </div>
+                </div>
             </div>
         </li>
         """
@@ -346,7 +361,7 @@ if not is_duplicate and ai_bullets_html:
     send_telegram_message(current_time_str, ai_bullets_html)
 
 # ==========================================
-# 6. RENDER HTML PAGE
+# 6. RENDER HTML PAGE WITH STRICT TIME-BASED LAYOUT
 # ==========================================
 print("=== Step 4: Formatting HTML Output ===")
 
@@ -392,28 +407,52 @@ pivot_table_html = """
 
 ist_time = now_ist.strftime("%b %d, %Y | %I:%M %p IST")
 
+# Strict pre-market window check: 7:00 AM (07:00) to 9:30 AM (09:30) IST
+current_time_num = now_ist.hour * 100 + now_ist.minute  # e.g. 7:15 AM -> 715, 11:31 PM -> 2331
+is_premarket_window = (700 <= current_time_num <= 930)
+
+if is_premarket_window:
+    # 7:00 AM to 9:30 AM IST: Briefing on TOP
+    main_dashboard_body = f"""
+    {briefing_section_html}
+    <h3 style="color:#2e7d32; margin-bottom:15px; font-size:1.3em;">📰 Live Market Commentary (15-Min Stream)</h3>
+    {commentary_blocks_html}
+    {pivot_table_html}
+    """
+else:
+    # All other times (e.g. 11:31 PM IST): Live Stream strictly on TOP
+    main_dashboard_body = f"""
+    <h3 style="color:#2e7d32; margin-bottom:15px; font-size:1.3em;">📰 Live Market Commentary (15-Min Stream)</h3>
+    {commentary_blocks_html}
+    {briefing_section_html}
+    {pivot_table_html}
+    """
+
 css_styles = """
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 30px auto; padding: 20px; color: #2c3e50; line-height: 1.6; background-color: #f8f9fa; }
-    h1 { color: #0d47a1; font-size: 2em; margin-bottom: 5px; }
-    .timestamp { color: #666; font-weight: 600; font-size: 0.95em; margin-bottom: 15px; }
-    .badge { background: #e8f5e9; color: #2e7d32; padding: 6px 12px; border-radius: 4px; font-size: 0.85em; font-weight: bold; display: inline-block; margin-bottom: 20px; }
-    hr { border: 0; height: 1px; background: #e0e0e0; margin-bottom: 25px; }
-    .time-card { background: #ffffff; border-left: 5px solid #2e7d32; padding: 22px 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 22px; }
-    .time-header { font-weight: bold; color: #1b5e20; font-size: 1.15em; margin-bottom: 14px; }
-    .pivot-section { background: #ffffff; padding: 22px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 22px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 920px; margin: 30px auto; padding: 20px; color: #2c3e50; line-height: 1.6; background-color: #f4f6f9; }
+    h1 { color: #0d47a1; font-size: 2.1em; margin-bottom: 5px; letter-spacing: -0.5px; }
+    .timestamp { color: #64748b; font-weight: 600; font-size: 0.95em; margin-bottom: 15px; }
+    .badge { background: #e8f5e9; color: #2e7d32; padding: 6px 14px; border-radius: 20px; font-size: 0.85em; font-weight: bold; display: inline-block; margin-bottom: 20px; border: 1px solid #c8e6c9; }
+    hr { border: 0; height: 1px; background: #cbd5e1; margin-bottom: 25px; }
+    .time-card { background: #ffffff; border-left: 5px solid #2e7d32; padding: 22px 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 22px; transition: transform 0.2s ease; }
+    .time-card:hover { transform: translateY(-2px); }
+    .time-header { font-weight: 700; color: #1b5e20; font-size: 1.15em; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+    .pivot-section { background: #ffffff; padding: 22px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 22px; }
     .pivot-section h3 { margin-top: 0; color: #0d47a1; font-size: 1.2em; margin-bottom: 15px; }
     .pivot-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .pivot-table th, .pivot-table td { padding: 12px 14px; border-bottom: 1px solid #eee; font-size: 1em; }
-    .pivot-table th { background-color: #f1f5f9; color: #334155; }
-    .card { background: #ffffff; border-left: 5px solid #1976d2; padding: 22px 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 22px; }
+    .pivot-table th, .pivot-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-size: 0.95em; }
+    .pivot-table th { background-color: #f8fafc; color: #475569; font-weight: 600; }
+    .card { background: #ffffff; border-left: 5px solid #1976d2; padding: 22px 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 22px; }
     .support { color: #d32f2f; font-weight: 600; }
     .pivot { color: #1976d2; font-weight: 600; }
     .resistance { color: #2e7d32; font-weight: 600; }
     ul { padding-left: 0; list-style: none; margin: 0; }
-    li { margin-bottom: 16px; font-size: 1em; color: #2c3e50; }
-    .news-item-box { display: flex; align-items: flex-start; gap: 15px; background: #fdfdfd; padding: 10px; border-radius: 6px; border: 1px solid #f0f0f0; }
-    .news-thumb { width: 75px; height: 75px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background-color: #e0e0e0; }
-    .news-text-content { flex-grow: 1; font-size: 0.98em; line-height: 1.5; }
+    li { margin-bottom: 18px; font-size: 1em; color: #334155; }
+    .news-item-box { display: flex; align-items: flex-start; gap: 16px; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
+    .news-thumb { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background-color: #e2e8f0; }
+    .news-text-content { flex-grow: 1; font-size: 0.98em; line-height: 1.55; }
+    .source-link { color: #0284c7; font-size: 0.82em; font-weight: 600; text-decoration: none; display: inline-block; }
+    .source-link:hover { text-decoration: underline; color: #0369a1; }
 """
 
 full_html = f"""<!DOCTYPE html>
@@ -432,14 +471,11 @@ full_html = f"""<!DOCTYPE html>
     <div class="timestamp">🕒 Last Updated: {ist_time}</div>
     <div class="badge">🔴 15-Minute Live Commentary Stream</div>
     <hr>
-    {briefing_section_html}
-    <h3 style="color:#2e7d32; margin-bottom:15px; font-size:1.3em;">📰 Live Market Commentary (15-Min Stream)</h3>
-    {commentary_blocks_html}
-    {pivot_table_html}
+    {main_dashboard_body}
 </body>
 </html>"""
 
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("✅ Successfully generated index.html!")
+print("✅ Successfully generated index.html with strict time-aware positioning and hyperlinks!")
