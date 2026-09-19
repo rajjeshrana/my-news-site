@@ -18,7 +18,9 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
 
 CATEGORY_FEEDS = {
     "⚡ Breaking Flashes & Geopolitics": [
+        # Real-time search wires indexing breaking quotes, war updates, and official statements
         "https://news.google.com/rss/search?q=Trump+OR+Iran+OR+war+OR+Fed+OR+RBI+statement+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=financialjuice+OR+DeitaOne+OR+ForexLive+breaking+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://news.google.com/rss/search?q=breaking+geopolitics+market+news+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://www.forexlive.com/feed/news",
         "https://www.fxstreet.com/rss/news",
@@ -146,7 +148,7 @@ for cat_name, feed_urls in CATEGORY_FEEDS.items():
                 
                 h_hash = hashlib.md5(t.lower().encode('utf-8')).hexdigest()
                 
-                # Title-level deduplication guard
+                # Title-level deduplication check
                 if h_hash not in seen_headline_hashes and t not in cleaned_titles:
                     cleaned_titles.append(t)
                     seen_headline_hashes.add(h_hash)
@@ -259,188 +261,4 @@ Headlines:
                 res = requests.post(groq_url, json=payload, headers=groq_headers, timeout=25)
                 if res.status_code == 200:
                     ai_bullets_html = res.json()["choices"][0]["message"]["content"]
-                    ai_bullets_html = re.sub(r'```html|```', '', ai_bullets_html).strip()
-                    break
-            except Exception as e:
-                print(f"⚠️ Groq API Error: {e}")
-
-    # Fallback to structured items if Groq API fails
-    if not ai_bullets_html:
-        items_list = []
-        for cat, items in category_data.items():
-            first_headline = items[0] if items else "Market activity remains bounded."
-            items_list.append(f"<li><b>{cat}:</b> {first_headline}</li>")
-        ai_bullets_html = "\n".join(items_list)
-
-    web_bullets_list = []
-    bullets_matches = re.findall(r'<li>(.*?)</li>', ai_bullets_html, re.DOTALL)
-    
-    cat_keys = list(category_images.keys())
-    for idx, b_text in enumerate(bullets_matches):
-        img_url = category_images.get(cat_keys[idx if idx < len(cat_keys) else 0], FALLBACK_IMAGE)
-        card_item = f"""
-        <li>
-            <div class="news-item-box">
-                <img src="{img_url}" class="news-thumb" alt="market news" onerror="this.onerror=null;this.src='{FALLBACK_IMAGE}';">
-                <div class="news-text-content">{b_text}</div>
-            </div>
-        </li>
-        """
-        web_bullets_list.append(card_item)
-
-    web_html_content = "\n".join(web_bullets_list) if web_bullets_list else ai_bullets_html
-
-    new_block = {
-        "timestamp": current_time_str,
-        "time_epoch": now_utc.timestamp(),
-        "html_content": web_html_content,
-        "raw_text_content": ai_bullets_html
-    }
-    blocks_history.insert(0, new_block)
-
-cutoff_epoch = (now_utc - timedelta(hours=48)).timestamp()
-blocks_history = [b for b in blocks_history if b.get("time_epoch", now_utc.timestamp()) >= cutoff_epoch]
-
-# Save max 500 recent headline hashes to prevent history.json bloat
-recent_hashes = list(seen_headline_hashes)[-500:]
-
-with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-    json.dump({
-        "morning_briefing": morning_briefing_data,
-        "seen_hashes": recent_hashes,
-        "blocks": blocks_history
-    }, f, indent=2)
-
-# ==========================================
-# 5. TELEGRAM AUTO-BROADCAST VIA BOT API
-# ==========================================
-def send_telegram_message(time_str, html_bullets):
-    if not (TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID):
-        print("ℹ️ Telegram credentials missing. Skipping notification.")
-        return
-
-    text_content = html_bullets.replace("<li>", "• ").replace("</li>", "\n")
-    message_body = (
-        f"📊 <b>Live Market Commentary ({time_str})</b>\n\n"
-        f"{text_content}\n"
-        f"🌐 <a href='https://rajjeshrana.github.io/my-news-site/'>View Terminal Dashboard</a>"
-    )
-
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": message_body,
-        "parse_mode": "HTML",
-        "disable_web_page_preview": True
-    }
-
-    try:
-        res = requests.post(url, json=payload, timeout=15)
-        if res.status_code == 200:
-            print("✅ Successfully broadcasted update to Telegram!")
-        else:
-            print(f"⚠️ Telegram Error: {res.status_code} - {res.text}")
-    except Exception as e:
-        print(f"⚠️ Telegram request failed: {e}")
-
-if not is_duplicate and ai_bullets_html:
-    send_telegram_message(current_time_str, ai_bullets_html)
-
-# ==========================================
-# 6. RENDER HTML PAGE
-# ==========================================
-print("=== Step 4: Formatting HTML Output ===")
-
-commentary_blocks_html = ""
-for block in blocks_history[:10]:
-    t_stamp = block.get("timestamp", "Live Update")
-    content = block.get("html_content", "")
-    commentary_blocks_html += f"""
-    <div class="time-card">
-        <div class="time-header">⏱️ {t_stamp} Update</div>
-        <ul>
-            {content}
-        </ul>
-    </div>
-    """
-
-briefing_section_html = ""
-if morning_briefing_data:
-    briefing_section_html = f"""
-    <div class="card" style="border-left-color: #0d47a1;">
-        <h3 style="margin-top:0; color:#0d47a1; font-size:1.2em;">☕ 7:00 AM Pre-Market Global Briefing ({morning_briefing_data.get('date')})</h3>
-        {morning_briefing_data.get('html')}
-    </div>
-    """
-
-pivot_table_html = """
-<div class="pivot-section">
-    <h3>📊 Real-Time Market Overview & Benchmarks</h3>
-    <table class="pivot-table">
-        <thead>
-            <tr><th>Index / Asset</th><th>Support (S1)</th><th>Pivot Point (P)</th><th>Resistance (R1)</th><th>Market Stance</th></tr>
-        </thead>
-        <tbody>
-            <tr><td><b>Nifty 50</b></td><td class="support">23,210</td><td class="pivot">23,300</td><td class="resistance">23,390</td><td><span style="color:#2e7d32; font-weight:bold;">Bullish Consolidation</span></td></tr>
-            <tr><td><b>Bank Nifty</b></td><td class="support">49,550</td><td class="pivot">49,800</td><td class="resistance">50,050</td><td><span style="color:#1976d2; font-weight:bold;">Rangebound</span></td></tr>
-            <tr><td><b>Sensex</b></td><td class="support">76,200</td><td class="pivot">76,500</td><td class="resistance">76,800</td><td><span style="color:#2e7d32; font-weight:bold;">Bullish Consolidation</span></td></tr>
-            <tr><td><b>USD / INR</b></td><td class="support">83.35</td><td class="pivot">83.50</td><td class="resistance">83.65</td><td><span style="color:#d32f2f; font-weight:bold;">Rupee Bounded</span></td></tr>
-            <tr><td><b>Crude Oil (Brent)</b></td><td class="support">$78.50</td><td class="pivot">$80.20</td><td class="resistance">$82.00</td><td><span style="color:#d32f2f; font-weight:bold;">Cooling Off</span></td></tr>
-        </tbody>
-    </table>
-</div>
-"""
-
-ist_time = now_ist.strftime("%b %d, %Y | %I:%M %p IST")
-
-css_styles = """
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 30px auto; padding: 20px; color: #2c3e50; line-height: 1.6; background-color: #f8f9fa; }
-    h1 { color: #0d47a1; font-size: 2em; margin-bottom: 5px; }
-    .timestamp { color: #666; font-weight: 600; font-size: 0.95em; margin-bottom: 15px; }
-    .badge { background: #e8f5e9; color: #2e7d32; padding: 6px 12px; border-radius: 4px; font-size: 0.85em; font-weight: bold; display: inline-block; margin-bottom: 20px; }
-    hr { border: 0; height: 1px; background: #e0e0e0; margin-bottom: 25px; }
-    .time-card { background: #ffffff; border-left: 5px solid #2e7d32; padding: 22px 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 22px; }
-    .time-header { font-weight: bold; color: #1b5e20; font-size: 1.15em; margin-bottom: 14px; }
-    .pivot-section { background: #ffffff; padding: 22px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 22px; }
-    .pivot-section h3 { margin-top: 0; color: #0d47a1; font-size: 1.2em; margin-bottom: 15px; }
-    .pivot-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .pivot-table th, .pivot-table td { padding: 12px 14px; border-bottom: 1px solid #eee; font-size: 1em; }
-    .pivot-table th { background-color: #f1f5f9; color: #334155; }
-    .card { background: #ffffff; border-left: 5px solid #1976d2; padding: 22px 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 22px; }
-    .support { color: #d32f2f; font-weight: 600; }
-    .pivot { color: #1976d2; font-weight: 600; }
-    .resistance { color: #2e7d32; font-weight: 600; }
-    ul { padding-left: 0; list-style: none; margin: 0; }
-    li { margin-bottom: 16px; font-size: 1em; color: #2c3e50; }
-    .news-item-box { display: flex; align-items: flex-start; gap: 15px; background: #fdfdfd; padding: 10px; border-radius: 6px; border: 1px solid #f0f0f0; }
-    .news-thumb { width: 75px; height: 75px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background-color: #e0e0e0; }
-    .news-text-content { flex-grow: 1; font-size: 0.98em; line-height: 1.5; }
-"""
-
-full_html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="300">
-    <title>Live Market Feed & Pre-Market Briefing</title>
-    <style>
-{css_styles}
-    </style>
-</head>
-<body>
-    <h1>Live Market Feed & Pre-Market Briefing</h1>
-    <div class="timestamp">🕒 Last Updated: {ist_time}</div>
-    <div class="badge">🔴 15-Minute Live Commentary Stream</div>
-    <hr>
-    {briefing_section_html}
-    <h3 style="color:#2e7d32; margin-bottom:15px; font-size:1.3em;">📰 Live Market Commentary (15-Min Stream)</h3>
-    {commentary_blocks_html}
-    {pivot_table_html}
-</body>
-</html>"""
-
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(full_html)
-
-print("✅ Successfully generated index.html!")
+                    ai_bullets_html = re.sub(r'```html|
