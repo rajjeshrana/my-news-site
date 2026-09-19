@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 # ==========================================
-# 1. 100+ EXPANDED GLOBAL FINANCIAL SOURCES NETWORK
+# 1. EXPANDED FINANCIAL SOURCES NETWORK
 # ==========================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip().strip("'").strip('"')
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
@@ -18,54 +18,42 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
 
 CATEGORY_FEEDS = {
     "⚡ Breaking Flashes & Geopolitics": [
-        "[https://news.google.com/rss/search?q=Trump+OR+Iran+OR+war+OR+Fed+OR+RBI+statement+when:1d&hl=en-US&gl=US&ceid=US:en](https://news.google.com/rss/search?q=Trump+OR+Iran+OR+war+OR+Fed+OR+RBI+statement+when:1d&hl=en-US&gl=US&ceid=US:en)",
-        "[https://news.google.com/rss/search?q=financialjuice+OR+DeitaOne+OR+ForexLive+breaking+when:1d&hl=en-US&gl=US&ceid=US:en](https://news.google.com/rss/search?q=financialjuice+OR+DeitaOne+OR+ForexLive+breaking+when:1d&hl=en-US&gl=US&ceid=US:en)",
-        "[https://news.google.com/rss/search?q=breaking+geopolitics+market+news+when:1d&hl=en-US&gl=US&ceid=US:en](https://news.google.com/rss/search?q=breaking+geopolitics+market+news+when:1d&hl=en-US&gl=US&ceid=US:en)",
-        "[https://www.forexlive.com/feed/news](https://www.forexlive.com/feed/news)",
-        "[https://www.fxstreet.com/rss/news](https://www.fxstreet.com/rss/news)",
-        "[https://www.actionforex.com/feed/](https://www.actionforex.com/feed/)",
-        "[https://www.investing.com/rss/news_14.rss](https://www.investing.com/rss/news_14.rss)",
-        "[https://news.google.com/rss/search?q=white+house+sanctions+military+conflict+when:1d&hl=en-US&gl=US&ceid=US:en](https://news.google.com/rss/search?q=white+house+sanctions+military+conflict+when:1d&hl=en-US&gl=US&ceid=US:en)",
-        "[https://news.google.com/rss/search?q=un+security+council+breaking+when:1d&hl=en-US&gl=US&ceid=US:en](https://news.google.com/rss/search?q=un+security+council+breaking+when:1d&hl=en-US&gl=US&ceid=US:en)"
+        # Google real-time social & news wire queries for X/Twitter announcements without proxy blocks
+        "https://news.google.com/rss/search?q=site:twitter.com+OR+site:x.com+Trump+Iran+war+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=financialjuice+OR+DeitaOne+OR+ForexLive+breaking+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "https://news.google.com/rss/search?q=breaking+geopolitics+market+news+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "https://www.forexlive.com/feed/news",
+        "https://www.fxstreet.com/rss/news",
+        "https://www.actionforex.com/feed/",
+        "https://www.investing.com/rss/news_14.rss"
     ],
     "Indian Stock Market": [
-        "[https://news.google.com/rss/search?q=Nifty+Sensex+stock+market+India+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en](https://news.google.com/rss/search?q=Nifty+Sensex+stock+market+India+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en)",
-        "[https://www.business-standard.com/rss/markets-106.rss](https://www.business-standard.com/rss/markets-106.rss)",
-        "[https://www.financialexpress.com/market/feed/](https://www.financialexpress.com/market/feed/)",
-        "[https://www.livemint.com/rss/markets](https://www.livemint.com/rss/markets)",
-        "[https://www.ndtvprofit.com/rss/markets.xml](https://www.ndtvprofit.com/rss/markets.xml)",
-        "[https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms](https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms)",
-        "[https://www.moneycontrol.com/rss/MCtopnews.xml](https://www.moneycontrol.com/rss/MCtopnews.xml)",
-        "[https://www.moneycontrol.com/rss/marketreports.xml](https://www.moneycontrol.com/rss/marketreports.xml)",
-        "[https://www.business-standard.com/rss/companies-101.rss](https://www.business-standard.com/rss/companies-101.rss)",
-        "[https://www.financialexpress.com/auto/feed/](https://www.financialexpress.com/auto/feed/)",
-        "[https://news.google.com/rss/search?q=sebi+rbi+policy+indian+economy+when:1d&hl=en-IN&gl=IN&ceid=IN:en](https://news.google.com/rss/search?q=sebi+rbi+policy+indian+economy+when:1d&hl=en-IN&gl=IN&ceid=IN:en)"
+        "https://news.google.com/rss/search?q=Nifty+Sensex+stock+market+India+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en",
+        "https://www.business-standard.com/rss/markets-106.rss",
+        "https://www.financialexpress.com/market/feed/",
+        "https://www.livemint.com/rss/markets",
+        "https://www.ndtvprofit.com/rss/markets.xml",
+        "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
+        "https://www.moneycontrol.com/rss/MCtopnews.xml"
     ],
     "US & Global Markets": [
-        "[https://news.google.com/rss/search?q=Wall+Street+Nasdaq+SP500+breaking+news+when:1d&hl=en-US&gl=US&ceid=US:en](https://news.google.com/rss/search?q=Wall+Street+Nasdaq+SP500+breaking+news+when:1d&hl=en-US&gl=US&ceid=US:en)",
-        "[https://search.cnbc.com/rs/search/combined:rss?source=cnbc&q=markets](https://search.cnbc.com/rs/search/combined:rss?source=cnbc&q=markets)",
-        "[https://feeds.a.dj.com/rss/RSSMarketsMain.xml](https://feeds.a.dj.com/rss/RSSMarketsMain.xml)",
-        "[https://www.investing.com/rss/news_25.rss](https://www.investing.com/rss/news_25.rss)",
-        "[https://www.marketwatch.com/rss/topstories](https://www.marketwatch.com/rss/topstories)",
-        "[https://www.ft.com/markets?format=rss](https://www.ft.com/markets?format=rss)",
-        "[https://news.google.com/rss/search?q=federal+reserve+rate+cut+inflation+cpi+when:1d&hl=en-US&gl=US&ceid=US:en](https://news.google.com/rss/search?q=federal+reserve+rate+cut+inflation+cpi+when:1d&hl=en-US&gl=US&ceid=US:en)",
-        "[https://news.google.com/rss/search?q=european+central+bank+nikkei+hang+seng+when:1d&hl=en-US&gl=US&ceid=US:en](https://news.google.com/rss/search?q=european+central+bank+nikkei+hang+seng+when:1d&hl=en-US&gl=US&ceid=US:en)"
+        "https://news.google.com/rss/search?q=Wall+Street+Nasdaq+SP500+breaking+news+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "https://search.cnbc.com/rs/search/combined:rss?source=cnbc&q=markets",
+        "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
+        "https://www.investing.com/rss/news_25.rss",
+        "https://www.marketwatch.com/rss/topstories"
     ],
     "Forex & Commodities": [
-        "[https://news.google.com/rss/search?q=Crude+Oil+Gold+USD+INR+forex+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en](https://news.google.com/rss/search?q=Crude+Oil+Gold+USD+INR+forex+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en)",
-        "[https://www.dailyfx.com/feeds/market-news](https://www.dailyfx.com/feeds/market-news)",
-        "[https://www.oilprice.com/rss/main](https://www.oilprice.com/rss/main)",
-        "[https://www.kitco.com/rss/news.xml](https://www.kitco.com/rss/news.xml)",
-        "[https://www.investing.com/rss/news_11.rss](https://www.investing.com/rss/news_11.rss)",
-        "[https://news.google.com/rss/search?q=brent+crude+opec+gold+price+silver+when:1d&hl=en-US&gl=US&ceid=US:en](https://news.google.com/rss/search?q=brent+crude+opec+gold+price+silver+when:1d&hl=en-US&gl=US&ceid=US:en)"
+        "https://news.google.com/rss/search?q=Crude+Oil+Gold+USD+INR+forex+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en",
+        "https://www.dailyfx.com/feeds/market-news",
+        "https://www.oilprice.com/rss/main",
+        "https://www.kitco.com/rss/news.xml"
     ],
     "Crypto & Global Macro": [
-        "[https://news.google.com/rss/search?q=Bitcoin+Ethereum+crypto+Fed+rates+when:1d&hl=en-US&gl=US&ceid=US:en](https://news.google.com/rss/search?q=Bitcoin+Ethereum+crypto+Fed+rates+when:1d&hl=en-US&gl=US&ceid=US:en)",
-        "[https://www.coindesk.com/arc/outboundfeeds/rss/](https://www.coindesk.com/arc/outboundfeeds/rss/)",
-        "[https://cointelegraph.com/rss](https://cointelegraph.com/rss)",
-        "[https://decrypt.co/feed](https://decrypt.co/feed)",
-        "[https://news.bitcoin.com/feed/](https://news.bitcoin.com/feed/)",
-        "[https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best](https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best)"
+        "https://news.google.com/rss/search?q=Bitcoin+Ethereum+crypto+Fed+rates+when:1d&hl=en-US&gl=US&ceid=US:en",
+        "https://www.coindesk.com/arc/outboundfeeds/rss/",
+        "https://cointelegraph.com/rss",
+        "https://decrypt.co/feed"
     ]
 }
 
@@ -73,7 +61,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
-FALLBACK_IMAGE = "[https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80](https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80)"
+FALLBACK_IMAGE = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80"
 
 def clean_url(url_str):
     match = re.search(r'https?://[^\s\]\)]+', str(url_str))
@@ -97,7 +85,7 @@ def extract_entry_image(entry):
     return FALLBACK_IMAGE
 
 # ==========================================
-# 2. INGEST HEADLINES & INDIVIDUAL DEDUPLICATION
+# 2. INGEST HEADLINES & DEDUPLICATION CHECK
 # ==========================================
 print("=== Step 1: Ingesting Live Multi-Source Market Feeds ===")
 now_ist = datetime.now(ZoneInfo("Asia/Kolkata"))
@@ -159,13 +147,13 @@ for cat_name, feed_urls in CATEGORY_FEEDS.items():
             print(f"⚠️ Error fetching {cat_name} from {feed_url}: {e}")
             
     if cleaned_titles:
-        category_data[cat_name] = cleaned_titles[:4]
+        category_data[cat_name] = cleaned_titles[:5]
         category_images[cat_name] = cat_img or FALLBACK_IMAGE
 
 is_duplicate = (new_items_count == 0)
 
 if is_duplicate:
-    print("ℹ️ Zero new headlines across all 100+ sources. Skipping duplicate post.")
+    print("ℹ️ Zero new headlines across all feeds. Skipping duplicate card creation.")
 
 # ==========================================
 # 3. 7:00 AM IST MORNING BRIEFING GENERATION
@@ -195,7 +183,7 @@ Headlines:
     
     briefing_html = None
     if GROQ_API_KEY:
-        groq_url = "[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)"
+        groq_url = "https://api.groq.com/openai/v1/chat/completions"
         groq_headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
         try:
             payload = {"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": briefing_prompt}], "temperature": 0.3}
@@ -238,37 +226,50 @@ CRITICAL INSTRUCTIONS:
 1. PRIORITIZE BREAKING NEWS: Lead with breaking geopolitical quotes (e.g., statements on war, sanctions, central bank actions, or leader quotes like Trump/Fed/RBI).
 2. NO GENERIC FLUFF: Mention specific tickers, commodities, currency pairs, or leaders wherever relevant.
 3. BOLD KEY TERMS: Use HTML <b>tags</b> to bold key stock tickers, levels, leader names, and major catalysts (e.g., <b>Nifty 50</b>, <b>Trump</b>, <b>Crude Oil</b>, <b>RBI</b>).
-4. STRUCTURE: Explain (1) WHAT happened, (2) WHY it happened, and (3) WHAT IT MEANS for immediate market bias.
+4. DENSE COMMENTARY: For each category, write a full 2-sentence summary explaining [1] WHAT happened, [2] WHY it happened, and [3] WHAT IT MEANS for immediate market bias.
 
 Output strictly 5 HTML <li> tags formatted as follows:
-<li><b>⚡ Breaking Flashes & Geopolitics:</b> [Synthesized commentary on breaking quotes or geopolitical developments]</li>
-<li><b>Indian Stock Market:</b> [Synthesized commentary on sector/stock drivers or Nifty/Sensex action]</li>
-<li><b>US & Global Markets:</b> [Synthesized commentary on Wall Street, yields, earnings, or Fed stance]</li>
-<li><b>Forex & Commodities:</b> [Synthesized commentary on USD/INR, Crude oil, or Gold demand]</li>
-<li><b>Crypto & Global Macro:</b> [Synthesized commentary on BTC/ETH price action or macro policy prints]</li>
+<li><b>⚡ Breaking Flashes & Geopolitics:</b> [Synthesized 2-sentence commentary on breaking quotes or geopolitical developments]</li>
+<li><b>Indian Stock Market:</b> [Synthesized 2-sentence commentary on sector/stock drivers or Nifty/Sensex action]</li>
+<li><b>US & Global Markets:</b> [Synthesized 2-sentence commentary on Wall Street, yields, earnings, or Fed stance]</li>
+<li><b>Forex & Commodities:</b> [Synthesized 2-sentence commentary on USD/INR, Crude oil, or Gold demand]</li>
+<li><b>Crypto & Global Macro:</b> [Synthesized 2-sentence commentary on BTC/ETH price action or macro policy prints]</li>
 
 Headlines:
 {prompt_text}
 """
     if GROQ_API_KEY:
-        groq_url = "[https://api.groq.com/openai/v1/chat/completions](https://api.groq.com/openai/v1/chat/completions)"
+        groq_url = "https://api.groq.com/openai/v1/chat/completions"
         groq_headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
-        for model in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
+        # Fallback model list to prevent failure if Groq decommissions an endpoint
+        models_to_try = [
+            "llama-3.3-70b-versatile", 
+            "llama-3.1-8b-instant", 
+            "llama3-70b-8192", 
+            "mixtral-8x7b-32768"
+        ]
+        
+        for model in models_to_try:
             try:
                 payload = {"model": model, "messages": [{"role": "user", "content": prompt}], "temperature": 0.3}
                 res = requests.post(groq_url, json=payload, headers=groq_headers, timeout=25)
                 if res.status_code == 200:
                     ai_bullets_html = res.json()["choices"][0]["message"]["content"]
                     ai_bullets_html = re.sub(r'```html|```', '', ai_bullets_html).strip()
+                    print(f"✅ Successfully synthesized commentary using model: {model}")
                     break
+                else:
+                    print(f"⚠️ Model {model} returned status code {res.status_code}: {res.text}")
             except Exception as e:
-                print(f"⚠️ Groq API Error: {e}")
+                print(f"⚠️ Groq API Error for model {model}: {e}")
 
+    # Explicit fallback if Groq API fails completely
     if not ai_bullets_html:
+        print("⚠️ All Groq models failed or key is invalid. Using fallback text formatting.")
         items_list = []
         for cat, items in category_data.items():
-            first_headline = items[0] if items else "Market activity remains bounded."
-            items_list.append(f"<li><b>{cat}:</b> {first_headline}</li>")
+            combined_text = " ".join(items)
+            items_list.append(f"<li><b>{cat}:</b> {combined_text}</li>")
         ai_bullets_html = "\n".join(items_list)
 
     web_bullets_list = []
@@ -321,10 +322,10 @@ def send_telegram_message(time_str, html_bullets):
     message_body = (
         f"📊 <b>Live Market Commentary ({time_str})</b>\n\n"
         f"{text_content}\n"
-        f"🌐 <a href='[https://rajjeshrana.github.io/my-news-site/](https://rajjeshrana.github.io/my-news-site/)'>View Terminal Dashboard</a>"
+        f"🌐 <a href='https://rajjeshrana.github.io/my-news-site/'>View Terminal Dashboard</a>"
     )
 
-    url = f"[https://api.telegram.org/bot](https://api.telegram.org/bot){TELEGRAM_BOT_TOKEN}/sendMessage"
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "text": message_body,
