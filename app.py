@@ -10,28 +10,28 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 # ==========================================
-# 1. 100+ EXPANDED GLOBAL FINANCIAL SOURCES NETWORK
+# 1. EXPANDED GLOBAL & INDIAN FEEDS NETWORK
 # ==========================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip().strip("'").strip('"')
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
 
 CATEGORY_FEEDS = {
+    "🎯 Indian Stock Picks & Breakouts": [
+        "https://news.google.com/rss/search?q=buy+stocks+for+next+week+India+Nifty+Sensex+when:2d&hl=en-IN&gl=IN&ceid=IN:en",
+        "https://news.google.com/rss/search?q=breakout+stocks+swing+trading+ideas+India+when:2d&hl=en-IN&gl=IN&ceid=IN:en",
+        "https://www.business-standard.com/rss/markets-106.rss",
+        "https://www.financialexpress.com/market/feed/",
+        "https://www.livemint.com/rss/markets"
+    ],
     "⚡ Breaking Flashes & Geopolitics": [
         "https://news.google.com/rss/search?q=site:twitter.com+OR+site:x.com+Trump+Iran+war+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://news.google.com/rss/search?q=financialjuice+OR+DeitaOne+OR+ForexLive+breaking+when:1d&hl=en-US&gl=US&ceid=US:en",
-        "https://news.google.com/rss/search?q=breaking+geopolitics+market+news+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://www.forexlive.com/feed/news",
-        "https://www.fxstreet.com/rss/news",
-        "https://www.actionforex.com/feed/",
-        "https://www.investing.com/rss/news_14.rss",
-        "https://news.google.com/rss/search?q=white+house+sanctions+military+conflict+when:1d&hl=en-US&gl=US&ceid=US:en"
+        "https://www.fxstreet.com/rss/news"
     ],
     "Indian Stock Market": [
         "https://news.google.com/rss/search?q=Nifty+Sensex+stock+market+India+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en",
-        "https://www.business-standard.com/rss/markets-106.rss",
-        "https://www.financialexpress.com/market/feed/",
-        "https://www.livemint.com/rss/markets",
         "https://www.ndtvprofit.com/rss/markets.xml",
         "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
         "https://www.moneycontrol.com/rss/MCtopnews.xml"
@@ -40,24 +40,12 @@ CATEGORY_FEEDS = {
         "https://news.google.com/rss/search?q=Wall+Street+Nasdaq+SP500+breaking+news+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://search.cnbc.com/rs/search/combined:rss?source=cnbc&q=markets",
         "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
-        "https://www.investing.com/rss/news_25.rss",
-        "https://www.marketwatch.com/rss/topstories",
-        "https://www.ft.com/markets?format=rss"
+        "https://www.investing.com/rss/news_25.rss"
     ],
     "Forex & Commodities": [
         "https://news.google.com/rss/search?q=Crude+Oil+Gold+USD+INR+forex+breaking+when:1d&hl=en-IN&gl=IN&ceid=IN:en",
         "https://www.dailyfx.com/feeds/market-news",
-        "https://www.oilprice.com/rss/main",
-        "https://www.kitco.com/rss/news.xml",
-        "https://www.investing.com/rss/news_11.rss"
-    ],
-    "Crypto & Global Macro": [
-        "https://news.google.com/rss/search?q=Bitcoin+Ethereum+crypto+Fed+rates+when:1d&hl=en-US&gl=US&ceid=US:en",
-        "https://www.coindesk.com/arc/outboundfeeds/rss/",
-        "https://cointelegraph.com/rss",
-        "https://decrypt.co/feed",
-        "https://news.bitcoin.com/feed/",
-        "https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best"
+        "https://www.oilprice.com/rss/main"
     ]
 }
 
@@ -89,14 +77,14 @@ def extract_entry_image(entry):
     return FALLBACK_IMAGE
 
 # ==========================================
-# 2. INGEST HEADLINES & INDIVIDUAL DEDUPLICATION
+# 2. INGEST HEADLINES & DEDUPLICATION CHECK
 # ==========================================
 print("=== Step 1: Ingesting Live Multi-Source Market Feeds ===")
 now_ist = datetime.now(ZoneInfo("Asia/Kolkata"))
 is_weekend = now_ist.weekday() in [5, 6]
 
 if is_weekend:
-    current_time_str = now_ist.strftime("%b %d, %Y") + " (Weekend Macro Wrap)"
+    current_time_str = now_ist.strftime("%b %d, %Y") + " (Weekly Market & Stock Setup)"
 else:
     current_time_str = now_ist.strftime("%I:%M %p IST")
 
@@ -161,88 +149,32 @@ for cat_name, feed_urls in CATEGORY_FEEDS.items():
 
 is_duplicate = (new_items_count == 0)
 
-if is_duplicate:
-    print("ℹ️ Zero new headlines across all feeds. Skipping duplicate card creation.")
-
 # ==========================================
-# 3. 7:00 AM IST MORNING BRIEFING GENERATION
-# ==========================================
-is_7am_window = (now_ist.hour == 7 and now_ist.minute < 30) or (morning_briefing_data is None)
-
-if is_7am_window and category_data:
-    print("=== Step 2: Generating 7:00 AM Pre-Market Global Briefing ===")
-    briefing_text_input = "\n".join([f"[{cat}]: " + " | ".join(items) for cat, items in category_data.items()])
-    
-    briefing_prompt = f"""
-You are a senior chief market strategist preparing a 7:00 AM IST Pre-Market Briefing.
-Synthesize the headlines into actionable, high-density market analysis. Highlight breaking geopolitical events, crude oil catalysts, and central bank commentary.
-
-Format strictly as HTML inside a single <div> with bullet points:
-<p><b>Overall Daily Market Bias: Moderately Bullish / Neutral / Bearish</b></p>
-<ul>
-  <li><b>⚡ Geopolitics & Macro Flashes:</b> [2 dense sentences on major geopolitical quotes or central bank developments]</li>
-  <li><b>Global & US Markets:</b> [2 dense sentences on Wall Street futures, treasury yields, or major macro drivers]</li>
-  <li><b>Commodities & Forex:</b> [2 dense sentences on crude oil, gold demand, or rupee/dollar levels]</li>
-  <li><b>Indian Equities Outlook:</b> [2 dense sentences on Nifty opening cues, institutional flows, or sector focus]</li>
-</ul>
-
-Headlines:
-{briefing_text_input}
-"""
-    
-    briefing_html = None
-    if GROQ_API_KEY:
-        groq_url = "https://api.groq.com/openai/v1/chat/completions"
-        groq_headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
-        try:
-            payload = {"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": briefing_prompt}], "temperature": 0.3}
-            res = requests.post(groq_url, json=payload, headers=groq_headers, timeout=25)
-            if res.status_code == 200:
-                briefing_html = res.json()["choices"][0]["message"]["content"]
-                briefing_html = re.sub(r'```html|```', '', briefing_html).strip()
-        except Exception as e:
-            print(f"⚠️ Groq briefing error: {e}")
-            
-    if not briefing_html:
-        briefing_html = (
-            "<p><b>Overall Daily Market Bias: Moderately Bullish</b></p>\n"
-            "<ul>\n"
-            "<li><b>⚡ Geopolitics & Macro Flashes:</b> Geopolitical headlines remain in focus as energy markets track supply stability in the Middle East.</li>\n"
-            "<li><b>Global & US Markets:</b> Wall Street futures trade in controlled ranges as treasury yields stabilize ahead of key inflation data.</li>\n"
-            "<li><b>Commodities & Forex:</b> Easing crude oil prices provide margin relief to Asian importers, while USD/INR holds near key support levels.</li>\n"
-            "<li><b>Indian Equities Outlook:</b> Nifty 50 and Sensex display positive underlying momentum supported by robust domestic DII buying.</li>\n"
-            "</ul>"
-        )
-        
-    morning_briefing_data = {
-        "date": now_ist.strftime("%b %d, %Y"),
-        "html": briefing_html
-    }
-
-# ==========================================
-# 4. SYNTHESIZE COMMENTARY WITH GROQ AI (IF NEW)
+# 3. SYNTHESIZE COMMENTARY & STOCK PICKS WITH GROQ AI
 # ==========================================
 ai_bullets_html = None
 
 if not is_duplicate and category_data:
-    print("=== Step 3: Generating Actionable Market Commentary Block ===")
+    print("=== Step 2: Generating Actionable Stock Setups & Market Commentary ===")
     prompt_text = "\n".join([f"[{cat}]: " + " | ".join(items) for cat, items in category_data.items()])
     
     prompt = f"""
-You are an institutional trading desk analyst. Analyze the market headlines and synthesize detailed, high-impact commentary.
+You are a senior Indian stock market research analyst. Analyze the provided stock news, technical breakout reports, and market headlines.
 
-CRITICAL INSTRUCTIONS:
-1. PRIORITIZE BREAKING NEWS: Lead with breaking geopolitical quotes (e.g., statements on war, sanctions, central bank actions, or leader quotes like Trump/Fed/RBI).
-2. NO GENERIC FLUFF: Mention specific tickers, commodities, currency pairs, key price levels, or leader names.
-3. BOLD KEY TERMS: Use HTML <b>tags</b> to bold key stock tickers, levels, leader names, and major catalysts (e.g., <b>Nifty 50</b>, <b>Trump</b>, <b>Crude Oil</b>, <b>RBI</b>).
-4. DENSE DETAILS: Write a full 2 to 3 detailed sentences for each bullet explaining [1] WHAT happened, [2] WHY it happened, and [3] WHAT IT MEANS for immediate market bias.
+Synthesize a high-conviction commentary block strictly containing 5 HTML <li> tags:
 
-Output strictly 5 HTML <li> tags formatted as follows:
-<li><b>⚡ Breaking Flashes & Geopolitics:</b> [Detailed 2-3 sentence commentary on breaking quotes or geopolitical developments]</li>
-<li><b>Indian Stock Market:</b> [Detailed 2-3 sentence commentary on sector/stock drivers or Nifty/Sensex action]</li>
-<li><b>US & Global Markets:</b> [Detailed 2-3 sentence commentary on Wall Street, yields, earnings, or Fed stance]</li>
-<li><b>Forex & Commodities:</b> [Detailed 2-3 sentence commentary on USD/INR, Crude oil, or Gold demand]</li>
-<li><b>Crypto & Global Macro:</b> [Detailed 2-3 sentence commentary on BTC/ETH price action or macro policy prints]</li>
+1. 🎯 **Indian Stocks to Watch Next Week**: List 3-4 specific Indian stock tickers mentioned in breakout/buy reports (e.g., <b>SBI</b>, <b>Tata Motors</b>, <b>Reliance</b>, <b>L&T</b>). Include technical buy triggers or fundamental catalysts in 2 dense sentences.
+2. ⚡ **Breaking Flashes & Geopolitics**: Summarize top breaking geopolitical quotes/events and immediate market risk bias in 2-3 dense sentences.
+3. 🇮🇳 **Indian Equities & Sector Focus**: Detail Nifty/Sensex trend, institutional FII/DII action, and top sectoral setups in 2-3 sentences.
+4. 🌍 **US & Global Markets**: Detail Wall Street momentum, rate expectations, and macro drivers in 2 sentences.
+5. 🛢️ **Forex & Commodities**: Detail Crude Oil, Gold, and USD/INR key trading boundaries in 2 sentences.
+
+Output strictly 5 HTML <li> tags formatted like this:
+<li><b>🎯 Indian Stocks to Watch Next Week:</b> [Detailed stock setups, key level targets, and breakout catalysts]</li>
+<li><b>⚡ Breaking Flashes & Geopolitics:</b> [Detailed geopolitical and market risk drivers]</li>
+<li><b>Indian Stock Market:</b> [Detailed Nifty, Sensex, and sectoral commentary]</li>
+<li><b>US & Global Markets:</b> [Detailed Wall Street and global macro analysis]</li>
+<li><b>Forex & Commodities:</b> [Detailed USD/INR, Crude, and Gold levels]</li>
 
 Headlines:
 {prompt_text}
@@ -263,219 +195,4 @@ Headlines:
                 res = requests.post(groq_url, json=payload, headers=groq_headers, timeout=25)
                 if res.status_code == 200:
                     ai_bullets_html = res.json()["choices"][0]["message"]["content"]
-                    ai_bullets_html = re.sub(r'```html|```', '', ai_bullets_html).strip()
-                    print(f"✅ Successfully synthesized commentary using model: {model}")
-                    break
-                else:
-                    print(f"⚠️ Model {model} returned status code {res.status_code}: {res.text}")
-            except Exception as e:
-                print(f"⚠️ Groq API Error for model {model}: {e}")
-
-    if not ai_bullets_html:
-        print("⚠️ All Groq models failed or key is invalid. Using fallback text formatting.")
-        items_list = []
-        for cat, items in category_data.items():
-            combined_text = " ".join(items)
-            items_list.append(f"<li><b>{cat}:</b> {combined_text}</li>")
-        ai_bullets_html = "\n".join(items_list)
-
-    web_bullets_list = []
-    bullets_matches = re.findall(r'<li>(.*?)</li>', ai_bullets_html, re.DOTALL)
-    
-    cat_keys = list(category_images.keys())
-    for idx, b_text in enumerate(bullets_matches):
-        cat_key = cat_keys[idx if idx < len(cat_keys) else 0]
-        img_url = category_images.get(cat_key, FALLBACK_IMAGE)
-        source_link = category_links.get(cat_key, "https://news.google.com")
-        
-        card_item = f"""
-        <li>
-            <div class="news-item-box">
-                <img src="{img_url}" class="news-thumb" alt="market news" onerror="this.onerror=null;this.src='{FALLBACK_IMAGE}';">
-                <div class="news-text-content">
-                    {b_text}
-                    <div style="margin-top: 6px;">
-                        <a href="{source_link}" target="_blank" class="source-link">🔗 Read Source Wire</a>
-                    </div>
-                </div>
-            </div>
-        </li>
-        """
-        web_bullets_list.append(card_item)
-
-    web_html_content = "\n".join(web_bullets_list) if web_bullets_list else ai_bullets_html
-
-    new_block = {
-        "timestamp": current_time_str,
-        "time_epoch": now_utc.timestamp(),
-        "html_content": web_html_content,
-        "raw_text_content": ai_bullets_html
-    }
-    blocks_history.insert(0, new_block)
-
-cutoff_epoch = (now_utc - timedelta(hours=48)).timestamp()
-blocks_history = [b for b in blocks_history if b.get("time_epoch", now_utc.timestamp()) >= cutoff_epoch]
-
-recent_hashes = list(seen_headline_hashes)[-500:]
-
-with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-    json.dump({
-        "morning_briefing": morning_briefing_data,
-        "seen_hashes": recent_hashes,
-        "blocks": blocks_history
-    }, f, indent=2)
-
-# ==========================================
-# 5. TELEGRAM AUTO-BROADCAST VIA BOT API
-# ==========================================
-def send_telegram_message(time_str, html_bullets):
-    if not (TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID):
-        print("ℹ️ Telegram credentials missing. Skipping notification.")
-        return
-
-    text_content = html_bullets.replace("<li>", "• ").replace("</li>", "\n")
-    message_body = (
-        f"📊 <b>Live Market Commentary ({time_str})</b>\n\n"
-        f"{text_content}\n"
-        f"🌐 <a href='https://rajjeshrana.github.io/my-news-site/'>View Terminal Dashboard</a>"
-    )
-
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": message_body,
-        "parse_mode": "HTML",
-        "disable_web_page_preview": True
-    }
-
-    try:
-        res = requests.post(url, json=payload, timeout=15)
-        if res.status_code == 200:
-            print("✅ Successfully broadcasted update to Telegram!")
-        else:
-            print(f"⚠️ Telegram Error: {res.status_code} - {res.text}")
-    except Exception as e:
-        print(f"⚠️ Telegram request failed: {e}")
-
-if not is_duplicate and ai_bullets_html:
-    send_telegram_message(current_time_str, ai_bullets_html)
-
-# ==========================================
-# 6. RENDER HTML PAGE WITH STRICT TIME-BASED LAYOUT
-# ==========================================
-print("=== Step 4: Formatting HTML Output ===")
-
-commentary_blocks_html = ""
-for block in blocks_history[:10]:
-    t_stamp = block.get("timestamp", "Live Update")
-    content = block.get("html_content", "")
-    commentary_blocks_html += f"""
-    <div class="time-card">
-        <div class="time-header">⏱️ {t_stamp} Update</div>
-        <ul>
-            {content}
-        </ul>
-    </div>
-    """
-
-briefing_section_html = ""
-if morning_briefing_data:
-    briefing_section_html = f"""
-    <div class="card" style="border-left-color: #0d47a1;">
-        <h3 style="margin-top:0; color:#0d47a1; font-size:1.2em;">☕ 7:00 AM Pre-Market Global Briefing ({morning_briefing_data.get('date')})</h3>
-        {morning_briefing_data.get('html')}
-    </div>
-    """
-
-pivot_table_html = """
-<div class="pivot-section">
-    <h3>📊 Real-Time Market Overview & Benchmarks</h3>
-    <table class="pivot-table">
-        <thead>
-            <tr><th>Index / Asset</th><th>Support (S1)</th><th>Pivot Point (P)</th><th>Resistance (R1)</th><th>Market Stance</th></tr>
-        </thead>
-        <tbody>
-            <tr><td><b>Nifty 50</b></td><td class="support">23,210</td><td class="pivot">23,300</td><td class="resistance">23,390</td><td><span style="color:#2e7d32; font-weight:bold;">Bullish Consolidation</span></td></tr>
-            <tr><td><b>Bank Nifty</b></td><td class="support">49,550</td><td class="pivot">49,800</td><td class="resistance">50,050</td><td><span style="color:#1976d2; font-weight:bold;">Rangebound</span></td></tr>
-            <tr><td><b>Sensex</b></td><td class="support">76,200</td><td class="pivot">76,500</td><td class="resistance">76,800</td><td><span style="color:#2e7d32; font-weight:bold;">Bullish Consolidation</span></td></tr>
-            <tr><td><b>USD / INR</b></td><td class="support">83.35</td><td class="pivot">83.50</td><td class="resistance">83.65</td><td><span style="color:#d32f2f; font-weight:bold;">Rupee Bounded</span></td></tr>
-            <tr><td><b>Crude Oil (Brent)</b></td><td class="support">$78.50</td><td class="pivot">$80.20</td><td class="resistance">$82.00</td><td><span style="color:#d32f2f; font-weight:bold;">Cooling Off</span></td></tr>
-        </tbody>
-    </table>
-</div>
-"""
-
-ist_time = now_ist.strftime("%b %d, %Y | %I:%M %p IST")
-
-# Strict pre-market window check: 7:00 AM (07:00) to 9:30 AM (09:30) IST
-current_time_num = now_ist.hour * 100 + now_ist.minute  # e.g. 7:15 AM -> 715, 11:31 PM -> 2331
-is_premarket_window = (700 <= current_time_num <= 930)
-
-if is_premarket_window:
-    # 7:00 AM to 9:30 AM IST: Briefing on TOP
-    main_dashboard_body = f"""
-    {briefing_section_html}
-    <h3 style="color:#2e7d32; margin-bottom:15px; font-size:1.3em;">📰 Live Market Commentary (15-Min Stream)</h3>
-    {commentary_blocks_html}
-    {pivot_table_html}
-    """
-else:
-    # All other times (e.g. 11:31 PM IST): Live Stream strictly on TOP
-    main_dashboard_body = f"""
-    <h3 style="color:#2e7d32; margin-bottom:15px; font-size:1.3em;">📰 Live Market Commentary (15-Min Stream)</h3>
-    {commentary_blocks_html}
-    {briefing_section_html}
-    {pivot_table_html}
-    """
-
-css_styles = """
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 920px; margin: 30px auto; padding: 20px; color: #2c3e50; line-height: 1.6; background-color: #f4f6f9; }
-    h1 { color: #0d47a1; font-size: 2.1em; margin-bottom: 5px; letter-spacing: -0.5px; }
-    .timestamp { color: #64748b; font-weight: 600; font-size: 0.95em; margin-bottom: 15px; }
-    .badge { background: #e8f5e9; color: #2e7d32; padding: 6px 14px; border-radius: 20px; font-size: 0.85em; font-weight: bold; display: inline-block; margin-bottom: 20px; border: 1px solid #c8e6c9; }
-    hr { border: 0; height: 1px; background: #cbd5e1; margin-bottom: 25px; }
-    .time-card { background: #ffffff; border-left: 5px solid #2e7d32; padding: 22px 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 22px; transition: transform 0.2s ease; }
-    .time-card:hover { transform: translateY(-2px); }
-    .time-header { font-weight: 700; color: #1b5e20; font-size: 1.15em; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
-    .pivot-section { background: #ffffff; padding: 22px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 22px; }
-    .pivot-section h3 { margin-top: 0; color: #0d47a1; font-size: 1.2em; margin-bottom: 15px; }
-    .pivot-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .pivot-table th, .pivot-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-size: 0.95em; }
-    .pivot-table th { background-color: #f8fafc; color: #475569; font-weight: 600; }
-    .card { background: #ffffff; border-left: 5px solid #1976d2; padding: 22px 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 22px; }
-    .support { color: #d32f2f; font-weight: 600; }
-    .pivot { color: #1976d2; font-weight: 600; }
-    .resistance { color: #2e7d32; font-weight: 600; }
-    ul { padding-left: 0; list-style: none; margin: 0; }
-    li { margin-bottom: 18px; font-size: 1em; color: #334155; }
-    .news-item-box { display: flex; align-items: flex-start; gap: 16px; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
-    .news-thumb { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background-color: #e2e8f0; }
-    .news-text-content { flex-grow: 1; font-size: 0.98em; line-height: 1.55; }
-    .source-link { color: #0284c7; font-size: 0.82em; font-weight: 600; text-decoration: none; display: inline-block; }
-    .source-link:hover { text-decoration: underline; color: #0369a1; }
-"""
-
-full_html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="300">
-    <title>Live Market Feed & Pre-Market Briefing</title>
-    <style>
-{css_styles}
-    </style>
-</head>
-<body>
-    <h1>Live Market Feed & Pre-Market Briefing</h1>
-    <div class="timestamp">🕒 Last Updated: {ist_time}</div>
-    <div class="badge">🔴 15-Minute Live Commentary Stream</div>
-    <hr>
-    {main_dashboard_body}
-</body>
-</html>"""
-
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(full_html)
-
-print("✅ Successfully generated index.html with strict time-aware positioning and hyperlinks!")
+                    ai_bullets_html = re.sub(r'```html|
