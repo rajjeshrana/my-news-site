@@ -1,26 +1,78 @@
-[
-  {
-    "timestamp": "12:31 AM IST",
-    "time_epoch": 1789758082.288425,
-    "updates": [
-      "<b>Indian Stock Market:</b> Stock Market Today Highlights: Sensex ends 22 points lower, Nifty gains 53 points",
-      "<b>US & Global Markets:</b> NASDAQ, S&P 500, Dow Jones advance as tech shares rally; oil and bond yields ease",
-      "<b>Forex:</b> The sharp drop in oil prices, coupled with the Reserve Bank of India's efforts to stabilize the currency, pushed the U.S. dollar to a two-week low against the Indian rupee.",
-      "<b>Crude Oil & Commodities:</b> Gold price extends gains despite US Fed rate hike: Should investors chase the rally? Key outlook explained",
-      "<b>Crypto (Top Coins):</b> Bitcoin vs Ethereum vs Solana: Which crypto asset is best positioned for the next bull run?",
-      "<b>Global Macro & Important Updates:</b> US Federal Reserve hikes interest rates \u2014 but will RBI follow suit?"
-    ]
-  },
-  {
-    "timestamp": "12:19 AM IST",
-    "time_epoch": 1789757373.964869,
-    "updates": [
-      "<b>Indian Stock Market:</b> Stock Market Today Highlights: Sensex ends 22 points lower, Nifty gains 53 points",
-      "<b>US & Global Markets:</b> NASDAQ, S&P 500, Dow Jones advance as tech shares rally; oil and bond yields ease",
-      "<b>Forex:</b> The sharp drop in oil prices, coupled with the Reserve Bank of India's efforts to stabilize the currency, pushed the U.S. dollar to a two-week low against the Indian rupee.",
-      "<b>Crude Oil & Commodities:</b> Gold price extends gains despite US Fed rate hike: Should investors chase the rally? Key outlook explained",
-      "<b>Crypto (Top Coins):</b> Bitcoin vs Ethereum vs Solana: Which crypto asset is best positioned for the next bull run?",
-      "<b>Global Macro & Important Updates:</b> US Federal Reserve hikes interest rates \u2014 but will RBI follow suit?"
-    ]
-  }
-]
+{
+  "seen_hashes": [
+    "7a1d74f390be23715bf01572bfc446dd",
+    "8221051260b1d8014ef57c45760df088",
+    "4989b63a79254101d34c48ffaadfd36f",
+    "581a6d721536bbe1854b8aa3dee4dbd4",
+    "6bc9e9df12f27a02a06d9c6d67245f80",
+    "ff23549072c60eb407ad4af65c394c3d",
+    "5d5c4ef798518bb5d7a10526dc27935d",
+    "6037ddfc9cd428d9d47f8064475fac80",
+    "507bee4008faf5a88ab5059a2f158116",
+    "3dcbd5c10b94c401aca662ffeb15e4d7",
+    "b69ed011efd94ef1ee4ea91645c56279",
+    "c73ea131dfa1803104af954cb563e481",
+    "3b7d7162286136efca317875c6f568a0",
+    "bde06670919475c91e8dc013002c2e29",
+    "d2a74dff8f821a0a8444435c13c8099c",
+    "be57248b7942096b6cb59b6cf84378d4",
+    "2812b327367bfcc61ce2401ad85690ea",
+    "1e6a86d0100a6b1a02a7c6cc6b51d268",
+    "a8d50f7e5495cdb267e1371c70fb3069",
+    "669ec6e7e5dbfb78a32216bba0c5c8cc",
+    "aa93d77c3f993e0980aeaa3ff342387a",
+    "18593b636d2ddc1ce37ffdcc77a53a65",
+    "704742d5e56821a376d21861b6cce103",
+    "ee4f28615d31a594520db584972e54ae",
+    "dd39ba6213e4a25eb494e22c1abd06fa",
+    "046fe99a50a63f9c4604fb051ffc3488",
+    "5d12008d3f5bc203ef3be5a66897b3c9",
+    "e6a85e4769450c73e1c993c0c8b69a70",
+    "798d371347b084a5fce828a410868661",
+    "f59284c3c1b27e10eb2164ea10341a2a",
+    "ca5e9cd89c78ee829c0090c8dd9a3239",
+    "035ed2311b96d2a65ec6a6fe71046c14",
+    "4ba1d65f4d42940fd092df62bab55435",
+    "ff2364a0be3d20e46cc69efb36afe9a5",
+    "d6ec822814232156e58b8fd151ebb292",
+    "c86e87c3a7b4a6aa41ecf73e2c10b605",
+    "2b840ff625d4d9a324755bdd50abec5a",
+    "85205741a07df1a6d323baa934265694",
+    "db99999fe7ec5174ba372d4c4161805b",
+    "51abf31c9a9e991cb9aac6c9333b4741",
+    "45ac0664f0f68ce459cd8f5aaa7fe22d",
+    "17b11d6b30df07e1a44241eb844a4e7e"
+  ],
+  "blocks": [
+    {
+      "timestamp": "Sep 20, 2026 (Weekend Stock & Macro Radar)",
+      "time_epoch": 1789842745.808449,
+      "html_content": "\n        <li>\n            <div class=\"news-item-box\">\n                <img src=\"https://www.business-standard.com/assets/web-assets/images/Business_Standard_1_685x385.jpg\" class=\"news-thumb\" alt=\"stock news\" onerror=\"this.onerror=null;this.src='https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80';\">\n                <div class=\"news-text-content\">\n                    <b>\ud83c\udfaf Breakout Stock Setups:</b> India's exports of software services up by 8.2% in FY26 to US$ 221.4 billion Hy Hazoor Multi Projects bags work contract worth Rs 207 crore Maruti Suzuki launches automatic S NIBE Group signs MoU with Naval Group, France Apollo Pipes forays into ceramic tiles segment\n                    <div style=\"margin-top: 10px;\">\n                        <a href=\"https://www.business-standard.com/markets/capital-market-news/india-s-exports-of-software-services-up-by-8-2-in-fy26-to-us-221-4-billion-126091900653_1.html\" target=\"_blank\" class=\"source-link\">\ud83d\udd17 Read Full Research Report & Source Wire</a>\n                    </div>\n                </div>\n            </div>\n        </li>\n        \n\n        <li>\n            <div class=\"news-item-box\">\n                <img src=\"https://editorial.fxsstatic.com/images/i/taiwan-02.jpg\" class=\"news-thumb\" alt=\"stock news\" onerror=\"this.onerror=null;this.src='https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80';\">\n                <div class=\"news-text-content\">\n                    <b>\u26a1 Breaking Flashes & Geopolitics:</b> investingLive Americas market news wrap: Bonds slump again, yen rate check adds intrigue after BOJ Oil finishes lower as the market sniffs out a TACO US industrial production 0.0% versus 0.3% expected investingLive European session wrap: Yen slides after BOJ hike as markets stay on edge What are the main events for today UK retail sales unexpectedly rise in August, backed by recovery in department stores, non\n                    <div style=\"margin-top: 10px;\">\n                        <a href=\"https://investinglive.com/news/investinglive-americas-market-news-wrap-bonds-slump-again-yen-rate-check-adds-intrigue-after-boj/\" target=\"_blank\" class=\"source-link\">\ud83d\udd17 Read Full Research Report & Source Wire</a>\n                    </div>\n                </div>\n            </div>\n        </li>\n        \n\n        <li>\n            <div class=\"news-item-box\">\n                <img src=\"https://img.etimg.com/photo/msid-134351910,imgsize-2467157.cms\" class=\"news-thumb\" alt=\"stock news\" onerror=\"this.onerror=null;this.src='https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80';\">\n                <div class=\"news-text-content\">\n                    <b>Indian Stock Market:</b> Dalal Street Week Ahead: Can Nifty defend the 23,000 support zone Bank of India MF CIO Alok Singh sees banks poised for a re Bitcoin reclaims $80,000, Ethereum nears $2,620 despite hawkish Fed, CLARITY Act setback Warren Buffett sounds alarm as stock market warning returns for only second time in 155 years HFCL, Polycab India among 7 companies that are Goldman Sachs\u2019 AI enablers. See full list F&amp;O Talk: 23,050 key Nifty support; Sudeep Shah outlines Tata stocks strategy, names 5 picks\n                    <div style=\"margin-top: 10px;\">\n                        <a href=\"https://economictimes.indiatimes.com/markets/stocks/news/dalal-street-week-ahead-can-nifty-defend-the-23000-support-zone/articleshow/134351910.cms\" target=\"_blank\" class=\"source-link\">\ud83d\udd17 Read Full Research Report & Source Wire</a>\n                    </div>\n                </div>\n            </div>\n        </li>\n        \n\n        <li>\n            <div class=\"news-item-box\">\n                <img src=\"https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80\" class=\"news-thumb\" alt=\"stock news\" onerror=\"this.onerror=null;this.src='https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80';\">\n                <div class=\"news-text-content\">\n                    <b>US & Global Markets:</b> Stocks Sink in Broad AI Rout Sparked by China's DeepSeek Comex Gold, Silver Settle Lower DeepSeek Won't Sink U.S. AI Titans Financial Services Roundup: Market Talk Arabica Coffee Prices Hit Record on U.S., Colombia Tariff Spat Swiss franc, Japanese yen Rise as DeepSeek News Boosts Safe Havens\n                    <div style=\"margin-top: 10px;\">\n                        <a href=\"https://www.wsj.com/articles/nikkei-may-rise-as-weak-yen-raises-earnings-hopes-776a8056?mod=rss_markets_main\" target=\"_blank\" class=\"source-link\">\ud83d\udd17 Read Full Research Report & Source Wire</a>\n                    </div>\n                </div>\n            </div>\n        </li>\n        \n\n        <li>\n            <div class=\"news-item-box\">\n                <img src=\"https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80\" class=\"news-thumb\" alt=\"stock news\" onerror=\"this.onerror=null;this.src='https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80';\">\n                <div class=\"news-text-content\">\n                    <b>Forex & Commodities:</b> IAEA Triples Nuclear Power Forecast as Small Reactors Finally Take Off UN Warns World Must Prepare for Life Beyond 1.5\u00b0C Global Shipping Costs Explode as Hormuz Disruptions Hit Key Trade Routes Space Macron Calls for Another Emergency Oil Release as Europe Loses Supply Kazakhstan Turns to Russian Gas as Domestic Demand Surges\n                    <div style=\"margin-top: 10px;\">\n                        <a href=\"https://oilprice.com/Energy/Energy-General/IAEA-Triples-Nuclear-Power-Forecast-as-Small-Reactors-Finally-Take-Off.html\" target=\"_blank\" class=\"source-link\">\ud83d\udd17 Read Full Research Report & Source Wire</a>\n                    </div>\n                </div>\n            </div>\n        </li>\n        ",
+      "raw_text_content": "<li><b>\ud83c\udfaf Breakout Stock Setups:</b> India's exports of software services up by 8.2% in FY26 to US$ 221.4 billion Hy Hazoor Multi Projects bags work contract worth Rs 207 crore Maruti Suzuki launches automatic S NIBE Group signs MoU with Naval Group, France Apollo Pipes forays into ceramic tiles segment</li>\n<li><b>\u26a1 Breaking Flashes & Geopolitics:</b> investingLive Americas market news wrap: Bonds slump again, yen rate check adds intrigue after BOJ Oil finishes lower as the market sniffs out a TACO US industrial production 0.0% versus 0.3% expected investingLive European session wrap: Yen slides after BOJ hike as markets stay on edge What are the main events for today UK retail sales unexpectedly rise in August, backed by recovery in department stores, non</li>\n<li><b>Indian Stock Market:</b> Dalal Street Week Ahead: Can Nifty defend the 23,000 support zone Bank of India MF CIO Alok Singh sees banks poised for a re Bitcoin reclaims $80,000, Ethereum nears $2,620 despite hawkish Fed, CLARITY Act setback Warren Buffett sounds alarm as stock market warning returns for only second time in 155 years HFCL, Polycab India among 7 companies that are Goldman Sachs\u2019 AI enablers. See full list F&amp;O Talk: 23,050 key Nifty support; Sudeep Shah outlines Tata stocks strategy, names 5 picks</li>\n<li><b>US & Global Markets:</b> Stocks Sink in Broad AI Rout Sparked by China's DeepSeek Comex Gold, Silver Settle Lower DeepSeek Won't Sink U.S. AI Titans Financial Services Roundup: Market Talk Arabica Coffee Prices Hit Record on U.S., Colombia Tariff Spat Swiss franc, Japanese yen Rise as DeepSeek News Boosts Safe Havens</li>\n<li><b>Forex & Commodities:</b> IAEA Triples Nuclear Power Forecast as Small Reactors Finally Take Off UN Warns World Must Prepare for Life Beyond 1.5\u00b0C Global Shipping Costs Explode as Hormuz Disruptions Hit Key Trade Routes Space Macron Calls for Another Emergency Oil Release as Europe Loses Supply Kazakhstan Turns to Russian Gas as Domestic Demand Surges</li>"
+    },
+    {
+      "timestamp": "12:31 AM IST",
+      "time_epoch": 1789758082.288425,
+      "updates": [
+        "<b>Indian Stock Market:</b> Stock Market Today Highlights: Sensex ends 22 points lower, Nifty gains 53 points",
+        "<b>US & Global Markets:</b> NASDAQ, S&P 500, Dow Jones advance as tech shares rally; oil and bond yields ease",
+        "<b>Forex:</b> The sharp drop in oil prices, coupled with the Reserve Bank of India's efforts to stabilize the currency, pushed the U.S. dollar to a two-week low against the Indian rupee.",
+        "<b>Crude Oil & Commodities:</b> Gold price extends gains despite US Fed rate hike: Should investors chase the rally? Key outlook explained",
+        "<b>Crypto (Top Coins):</b> Bitcoin vs Ethereum vs Solana: Which crypto asset is best positioned for the next bull run?",
+        "<b>Global Macro & Important Updates:</b> US Federal Reserve hikes interest rates \u2014 but will RBI follow suit?"
+      ]
+    },
+    {
+      "timestamp": "12:19 AM IST",
+      "time_epoch": 1789757373.964869,
+      "updates": [
+        "<b>Indian Stock Market:</b> Stock Market Today Highlights: Sensex ends 22 points lower, Nifty gains 53 points",
+        "<b>US & Global Markets:</b> NASDAQ, S&P 500, Dow Jones advance as tech shares rally; oil and bond yields ease",
+        "<b>Forex:</b> The sharp drop in oil prices, coupled with the Reserve Bank of India's efforts to stabilize the currency, pushed the U.S. dollar to a two-week low against the Indian rupee.",
+        "<b>Crude Oil & Commodities:</b> Gold price extends gains despite US Fed rate hike: Should investors chase the rally? Key outlook explained",
+        "<b>Crypto (Top Coins):</b> Bitcoin vs Ethereum vs Solana: Which crypto asset is best positioned for the next bull run?",
+        "<b>Global Macro & Important Updates:</b> US Federal Reserve hikes interest rates \u2014 but will RBI follow suit?"
+      ]
+    }
+  ]
+}

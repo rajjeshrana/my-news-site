@@ -4,174 +4,174 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="300">
-    <title>Live Market Feed & Pre-Market Briefing</title>
+    <title>Weekend Stock Radar & Market Terminal</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 850px;
-            margin: 30px auto;
-            padding: 20px;
-            color: #2c3e50;
-            line-height: 1.6;
-            background-color: #f8f9fa;
-        }
-        h1 {
-            color: #0d47a1;
-            font-size: 1.8em;
-            margin-bottom: 5px;
-        }
-        .timestamp {
-            color: #666;
-            font-weight: 600;
-            font-size: 0.9em;
-            margin-bottom: 15px;
-        }
-        .badge {
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-        hr {
-            border: 0;
-            height: 1px;
-            background: #e0e0e0;
-            margin-bottom: 20px;
-        }
-        .time-card {
-            background: #ffffff;
-            border-left: 5px solid #2e7d32;
-            padding: 16px 20px;
-            border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-            margin-bottom: 15px;
-        }
-        .time-header {
-            font-weight: bold;
-            color: #1b5e20;
-            font-size: 1.05em;
-            margin-bottom: 10px;
-        }
-        .pivot-section {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        .pivot-section h3 {
-            margin-top: 0;
-            color: #0d47a1;
-            font-size: 1.1em;
-            margin-bottom: 15px;
-        }
-        .pivot-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-        .pivot-table th, .pivot-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #eee;
-            font-size: 0.95em;
-        }
-        .pivot-table th {
-            background-color: #f1f5f9;
-            color: #334155;
-        }
-        .card {
-            background: #ffffff;
-            border-left: 5px solid #1976d2;
-            padding: 20px 25px;
-            border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        .support { color: #d32f2f; font-weight: 600; }
-        .pivot { color: #1976d2; font-weight: 600; }
-        .resistance { color: #2e7d32; font-weight: 600; }
-        ul {
-            padding-left: 18px;
-            margin: 0;
-        }
-        li {
-            margin-bottom: 6px;
-            font-size: 0.95em;
-            color: #333;
-        }
+
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 940px; margin: 30px auto; padding: 20px; color: #1e293b; line-height: 1.6; background-color: #f8fafc; }
+    h1 { color: #0f172a; font-size: 2.2em; margin-bottom: 5px; letter-spacing: -0.5px; }
+    .timestamp { color: #64748b; font-weight: 600; font-size: 0.95em; margin-bottom: 15px; }
+    .badge { background: #dcfce7; color: #15803d; padding: 6px 14px; border-radius: 20px; font-size: 0.85em; font-weight: bold; display: inline-block; margin-bottom: 20px; border: 1px solid #bbf7d0; }
+    hr { border: 0; height: 1px; background: #e2e8f0; margin-bottom: 25px; }
+    
+    .stock-radar-card { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; padding: 22px 26px; border-radius: 14px; margin-bottom: 25px; box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.3); }
+    .stock-radar-header { font-size: 1.3em; font-weight: 700; margin-bottom: 16px; letter-spacing: -0.3px; }
+    .stock-radar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .stock-item { background: rgba(255, 255, 255, 0.12); padding: 14px 18px; border-radius: 10px; backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    .stock-symbol { display: block; font-weight: 800; font-size: 1.1em; color: #ffffff; }
+    .stock-target { display: block; font-size: 0.9em; color: #f1f5f9; margin-top: 4px; }
+    .stock-bias { display: inline-block; font-size: 0.78em; font-weight: 700; padding: 3px 10px; border-radius: 6px; margin-top: 8px; }
+    .bullish { background: #16a34a; color: #ffffff; }
+
+    .time-card { background: #ffffff; border-left: 6px solid #16a34a; padding: 24px 28px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 24px; border-top: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
+    .time-header { font-weight: 700; color: #15803d; font-size: 1.2em; margin-bottom: 18px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+    .pivot-section { background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 24px; }
+    .pivot-section h3 { margin-top: 0; color: #1e3a8a; font-size: 1.25em; margin-bottom: 16px; }
+    .pivot-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .pivot-table th, .pivot-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.98em; }
+    .pivot-table th { background-color: #f8fafc; color: #475569; font-weight: 700; }
+    .support { color: #dc2626; font-weight: 600; }
+    .pivot { color: #2563eb; font-weight: 600; }
+    .resistance { color: #16a34a; font-weight: 600; }
+    ul { padding-left: 0; list-style: none; margin: 0; }
+    li { margin-bottom: 20px; font-size: 1.02em; color: #334155; }
+    .news-item-box { display: flex; align-items: flex-start; gap: 18px; background: #ffffff; padding: 16px; border-radius: 10px; border: 1px solid #e2e8f0; }
+    .news-thumb { width: 90px; height: 90px; border-radius: 10px; object-fit: cover; flex-shrink: 0; background-color: #e2e8f0; }
+    .news-text-content { flex-grow: 1; font-size: 1em; line-height: 1.6; }
+    .source-link { color: #0284c7; font-size: 0.85em; font-weight: 700; text-decoration: none; display: inline-block; }
+    .source-link:hover { text-decoration: underline; color: #0369a1; }
+
     </style>
 </head>
 <body>
-    <h1>Live Market Feed & Pre-Market Briefing</h1>
-    <div class="timestamp">🕒 Last Updated: Sep 19, 2026 | 12:31 AM IST</div>
-    <div class="badge">🔴 15-Minute Live Commentary Timeline</div>
+    <h1>Weekend Stock Radar & Market Terminal</h1>
+    <div class="timestamp">🕒 Last Updated: Sep 20, 2026 | 12:02 AM IST</div>
+    <div class="badge">🔴 Weekend Detailed Stock Research Mode</div>
     <hr>
-    <h3 style="color:#2e7d32; margin-bottom:15px;">📰 Live Market Commentary (15-Min Stream)</h3>
+    
+<div class="stock-radar-card">
+    <div class="stock-radar-header">🔥 High-Conviction Breakout Stocks & Targets (Next Week)</div>
+    <div class="stock-radar-grid">
+        <div class="stock-item">
+            <span class="stock-symbol">APARIND</span>
+            <span class="stock-target">Buy: ₹17,750 | Target: ₹19,200</span>
+            <span class="stock-bias bullish">RSI & PMOX Crossover</span>
+        </div>
+        <div class="stock-item">
+            <span class="stock-symbol">BEML</span>
+            <span class="stock-target">Buy: ₹2,000 | Target: ₹2,120</span>
+            <span class="stock-bias bullish">40-Brick Renko Retest</span>
+        </div>
+        <div class="stock-item">
+            <span class="stock-symbol">AEGISVOPAK</span>
+            <span class="stock-target">Buy: ₹305 | Target: ₹335</span>
+            <span class="stock-bias bullish">52-Week High Breakout</span>
+        </div>
+    </div>
+</div>
+
+    <h3 style="color:#16a34a; margin-bottom:18px; font-size:1.35em;">📰 Deep Stock Breakdown & Macro Commentary</h3>
+    
+    <div class="time-card">
+        <div class="time-header">⏱️ Sep 20, 2026 (Weekend Stock & Macro Radar) Update</div>
+        <ul>
+            
+        <li>
+            <div class="news-item-box">
+                <img src="https://www.business-standard.com/assets/web-assets/images/Business_Standard_1_685x385.jpg" class="news-thumb" alt="stock news" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80';">
+                <div class="news-text-content">
+                    <b>🎯 Breakout Stock Setups:</b> India's exports of software services up by 8.2% in FY26 to US$ 221.4 billion Hy Hazoor Multi Projects bags work contract worth Rs 207 crore Maruti Suzuki launches automatic S NIBE Group signs MoU with Naval Group, France Apollo Pipes forays into ceramic tiles segment
+                    <div style="margin-top: 10px;">
+                        <a href="https://www.business-standard.com/markets/capital-market-news/india-s-exports-of-software-services-up-by-8-2-in-fy26-to-us-221-4-billion-126091900653_1.html" target="_blank" class="source-link">🔗 Read Full Research Report & Source Wire</a>
+                    </div>
+                </div>
+            </div>
+        </li>
+        
+
+        <li>
+            <div class="news-item-box">
+                <img src="https://editorial.fxsstatic.com/images/i/taiwan-02.jpg" class="news-thumb" alt="stock news" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80';">
+                <div class="news-text-content">
+                    <b>⚡ Breaking Flashes & Geopolitics:</b> investingLive Americas market news wrap: Bonds slump again, yen rate check adds intrigue after BOJ Oil finishes lower as the market sniffs out a TACO US industrial production 0.0% versus 0.3% expected investingLive European session wrap: Yen slides after BOJ hike as markets stay on edge What are the main events for today UK retail sales unexpectedly rise in August, backed by recovery in department stores, non
+                    <div style="margin-top: 10px;">
+                        <a href="https://investinglive.com/news/investinglive-americas-market-news-wrap-bonds-slump-again-yen-rate-check-adds-intrigue-after-boj/" target="_blank" class="source-link">🔗 Read Full Research Report & Source Wire</a>
+                    </div>
+                </div>
+            </div>
+        </li>
+        
+
+        <li>
+            <div class="news-item-box">
+                <img src="https://img.etimg.com/photo/msid-134351910,imgsize-2467157.cms" class="news-thumb" alt="stock news" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80';">
+                <div class="news-text-content">
+                    <b>Indian Stock Market:</b> Dalal Street Week Ahead: Can Nifty defend the 23,000 support zone Bank of India MF CIO Alok Singh sees banks poised for a re Bitcoin reclaims $80,000, Ethereum nears $2,620 despite hawkish Fed, CLARITY Act setback Warren Buffett sounds alarm as stock market warning returns for only second time in 155 years HFCL, Polycab India among 7 companies that are Goldman Sachs’ AI enablers. See full list F&amp;O Talk: 23,050 key Nifty support; Sudeep Shah outlines Tata stocks strategy, names 5 picks
+                    <div style="margin-top: 10px;">
+                        <a href="https://economictimes.indiatimes.com/markets/stocks/news/dalal-street-week-ahead-can-nifty-defend-the-23000-support-zone/articleshow/134351910.cms" target="_blank" class="source-link">🔗 Read Full Research Report & Source Wire</a>
+                    </div>
+                </div>
+            </div>
+        </li>
+        
+
+        <li>
+            <div class="news-item-box">
+                <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80" class="news-thumb" alt="stock news" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80';">
+                <div class="news-text-content">
+                    <b>US & Global Markets:</b> Stocks Sink in Broad AI Rout Sparked by China's DeepSeek Comex Gold, Silver Settle Lower DeepSeek Won't Sink U.S. AI Titans Financial Services Roundup: Market Talk Arabica Coffee Prices Hit Record on U.S., Colombia Tariff Spat Swiss franc, Japanese yen Rise as DeepSeek News Boosts Safe Havens
+                    <div style="margin-top: 10px;">
+                        <a href="https://www.wsj.com/articles/nikkei-may-rise-as-weak-yen-raises-earnings-hopes-776a8056?mod=rss_markets_main" target="_blank" class="source-link">🔗 Read Full Research Report & Source Wire</a>
+                    </div>
+                </div>
+            </div>
+        </li>
+        
+
+        <li>
+            <div class="news-item-box">
+                <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80" class="news-thumb" alt="stock news" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80';">
+                <div class="news-text-content">
+                    <b>Forex & Commodities:</b> IAEA Triples Nuclear Power Forecast as Small Reactors Finally Take Off UN Warns World Must Prepare for Life Beyond 1.5°C Global Shipping Costs Explode as Hormuz Disruptions Hit Key Trade Routes Space Macron Calls for Another Emergency Oil Release as Europe Loses Supply Kazakhstan Turns to Russian Gas as Domestic Demand Surges
+                    <div style="margin-top: 10px;">
+                        <a href="https://oilprice.com/Energy/Energy-General/IAEA-Triples-Nuclear-Power-Forecast-as-Small-Reactors-Finally-Take-Off.html" target="_blank" class="source-link">🔗 Read Full Research Report & Source Wire</a>
+                    </div>
+                </div>
+            </div>
+        </li>
+        
+        </ul>
+    </div>
     
     <div class="time-card">
         <div class="time-header">⏱️ 12:31 AM IST Update</div>
         <ul>
-            <li><b>Indian Stock Market:</b> Stock Market Today Highlights: Sensex ends 22 points lower, Nifty gains 53 points</li><li><b>US & Global Markets:</b> NASDAQ, S&P 500, Dow Jones advance as tech shares rally; oil and bond yields ease</li><li><b>Forex:</b> The sharp drop in oil prices, coupled with the Reserve Bank of India's efforts to stabilize the currency, pushed the U.S. dollar to a two-week low against the Indian rupee.</li><li><b>Crude Oil & Commodities:</b> Gold price extends gains despite US Fed rate hike: Should investors chase the rally? Key outlook explained</li><li><b>Crypto (Top Coins):</b> Bitcoin vs Ethereum vs Solana: Which crypto asset is best positioned for the next bull run?</li><li><b>Global Macro & Important Updates:</b> US Federal Reserve hikes interest rates — but will RBI follow suit?</li>
+            
         </ul>
     </div>
     
     <div class="time-card">
         <div class="time-header">⏱️ 12:19 AM IST Update</div>
         <ul>
-            <li><b>Indian Stock Market:</b> Stock Market Today Highlights: Sensex ends 22 points lower, Nifty gains 53 points</li><li><b>US & Global Markets:</b> NASDAQ, S&P 500, Dow Jones advance as tech shares rally; oil and bond yields ease</li><li><b>Forex:</b> The sharp drop in oil prices, coupled with the Reserve Bank of India's efforts to stabilize the currency, pushed the U.S. dollar to a two-week low against the Indian rupee.</li><li><b>Crude Oil & Commodities:</b> Gold price extends gains despite US Fed rate hike: Should investors chase the rally? Key outlook explained</li><li><b>Crypto (Top Coins):</b> Bitcoin vs Ethereum vs Solana: Which crypto asset is best positioned for the next bull run?</li><li><b>Global Macro & Important Updates:</b> US Federal Reserve hikes interest rates — but will RBI follow suit?</li>
+            
         </ul>
     </div>
     
     
 <div class="pivot-section">
-    <h3>📌 Daily Pivot Levels</h3>
+    <h3>📊 Key Indices Pivot Points & Support/Resistance</h3>
     <table class="pivot-table">
         <thead>
-            <tr>
-                <th>Index</th>
-                <th>Support (S1)</th>
-                <th>Pivot (P)</th>
-                <th>Resistance (R1)</th>
-            </tr>
+            <tr><th>Index / Asset</th><th>Support (S1)</th><th>Pivot Point (P)</th><th>Resistance (R1)</th><th>Market Stance</th></tr>
         </thead>
         <tbody>
-
-            <tr>
-                <td><b>Nifty 50</b></td>
-                <td class="support">23210</td>
-                <td class="pivot">23300</td>
-                <td class="resistance">23390</td>
-            </tr>
-    
-            <tr>
-                <td><b>Bank Nifty</b></td>
-                <td class="support">49550</td>
-                <td class="pivot">49800</td>
-                <td class="resistance">50050</td>
-            </tr>
-    
-            <tr>
-                <td><b>Sensex</b></td>
-                <td class="support">76200</td>
-                <td class="pivot">76500</td>
-                <td class="resistance">76800</td>
-            </tr>
-    
+            <tr><td><b>Nifty 50</b></td><td class="support">23,210</td><td class="pivot">23,300</td><td class="resistance">23,390</td><td><span style="color:#2e7d32; font-weight:bold;">Bullish Consolidation</span></td></tr>
+            <tr><td><b>Bank Nifty</b></td><td class="support">49,550</td><td class="pivot">49,800</td><td class="resistance">50,050</td><td><span style="color:#1976d2; font-weight:bold;">Rangebound</span></td></tr>
+            <tr><td><b>Sensex</b></td><td class="support">76,200</td><td class="pivot">76,500</td><td class="resistance">76,800</td><td><span style="color:#2e7d32; font-weight:bold;">Bullish Consolidation</span></td></tr>
+            <tr><td><b>USD / INR</b></td><td class="support">83.35</td><td class="pivot">83.50</td><td class="resistance">83.65</td><td><span style="color:#d32f2f; font-weight:bold;">Rupee Bounded</span></td></tr>
+            <tr><td><b>Crude Oil (Brent)</b></td><td class="support">$78.50</td><td class="pivot">$80.20</td><td class="resistance">$82.00</td><td><span style="color:#d32f2f; font-weight:bold;">Cooling Off</span></td></tr>
         </tbody>
     </table>
 </div>
 
-    <div class="card">
-        <h3 style="margin-top:0; color:#0d47a1;">☕ Morning 7 AM Pre-Market Briefing (&lt;100 Words)</h3>
-        <p><b>Market Bias: Moderately Bullish</b></p>
-<ul>
-<li><b>Indian Markets:</b> Nifty and Sensex trade with positive momentum supported by institutional buying.</li>
-<li><b>Global Cues:</b> Easing crude oil and stable foreign currencies provide steady support for morning trade.</li>
-</ul>
-    </div>
 </body>
 </html>
