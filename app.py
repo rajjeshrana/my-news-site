@@ -116,7 +116,7 @@ if os.path.exists(HISTORY_FILE):
         print(f"⚠️ Load error on history.json: {e}")
 
 latest_saved_hash = blocks_history[0].get("hash") if blocks_history else None
-is_duplicate = (current_hash is not None) and (latest_hash == current_hash)
+is_duplicate = (current_hash is not None) and (latest_saved_hash == current_hash)
 
 if is_duplicate:
     print("ℹ️ No new headline updates detected since last run. Skipping duplicate card creation!")
@@ -207,4 +207,125 @@ Headlines:
                 res = requests.post(groq_url, json=payload, headers=groq_headers, timeout=25)
                 if res.status_code == 200:
                     ai_bullets_html = res.json()["choices"][0]["message"]["content"]
-                    ai_bullets_html = re.sub(r'```html|
+                    ai_bullets_html = re.sub(r'```html|```', '', ai_bullets_html).strip()
+                    break
+            except Exception as e:
+                print(f"⚠️ Groq error: {e}")
+
+    if not ai_bullets_html:
+        items_list = []
+        for cat, items in category_data.items():
+            txt = " ".join(items)
+            items_list.append(f"<li><b>{cat}:</b> {txt}. Trading activity remains bounded as market participants assess broader economic indicators.</li>")
+        ai_bullets_html = "\n".join(items_list)
+
+    new_block = {
+        "timestamp": current_time_str,
+        "time_epoch": now_utc.timestamp(),
+        "hash": current_hash,
+        "html_content": ai_bullets_html
+    }
+    blocks_history.insert(0, new_block)
+
+cutoff_epoch = (now_utc - timedelta(hours=48)).timestamp()
+blocks_history = [b for b in blocks_history if b.get("time_epoch", now_utc.timestamp()) >= cutoff_epoch]
+
+with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+    json.dump({
+        "morning_briefing": morning_briefing_data,
+        "blocks": blocks_history
+    }, f, indent=2)
+
+# ==========================================
+# 5. RENDER HTML PAGE
+# ==========================================
+print("=== Step 4: Formatting HTML Output ===")
+
+commentary_blocks_html = ""
+for block in blocks_history[:10]:
+    t_stamp = block.get("timestamp", "Live Update")
+    content = block.get("html_content", "")
+    commentary_blocks_html += f"""
+    <div class="time-card">
+        <div class="time-header">⏱️ {t_stamp} Update</div>
+        <ul>
+            {content}
+        </ul>
+    </div>
+    """
+
+briefing_section_html = ""
+if morning_briefing_data:
+    briefing_section_html = f"""
+    <div class="card" style="border-left-color: #0d47a1;">
+        <h3 style="margin-top:0; color:#0d47a1; font-size:1.2em;">☕ 7:00 AM Pre-Market Global Briefing ({morning_briefing_data.get('date')})</h3>
+        {morning_briefing_data.get('html')}
+    </div>
+    """
+
+pivot_table_html = """
+<div class="pivot-section">
+    <h3>📌 Daily Pivot Levels</h3>
+    <table class="pivot-table">
+        <thead>
+            <tr><th>Index</th><th>Support (S1)</th><th>Pivot (P)</th><th>Resistance (R1)</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><b>Nifty 50</b></td><td class="support">23,210</td><td class="pivot">23,300</td><td class="resistance">23,390</td></tr>
+            <tr><td><b>Bank Nifty</b></td><td class="support">49,550</td><td class="pivot">49,800</td><td class="resistance">50,050</td></tr>
+            <tr><td><b>Sensex</b></td><td class="support">76,200</td><td class="pivot">76,500</td><td class="resistance">76,800</td></tr>
+        </tbody>
+    </table>
+</div>
+"""
+
+ist_time = now_ist.strftime("%b %d, %Y | %I:%M %p IST")
+
+css_styles = """
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 30px auto; padding: 20px; color: #2c3e50; line-height: 1.6; background-color: #f8f9fa; }
+    h1 { color: #0d47a1; font-size: 2em; margin-bottom: 5px; }
+    .timestamp { color: #666; font-weight: 600; font-size: 0.95em; margin-bottom: 15px; }
+    .badge { background: #e8f5e9; color: #2e7d32; padding: 6px 12px; border-radius: 4px; font-size: 0.85em; font-weight: bold; display: inline-block; margin-bottom: 20px; }
+    hr { border: 0; height: 1px; background: #e0e0e0; margin-bottom: 25px; }
+    .time-card { background: #ffffff; border-left: 5px solid #2e7d32; padding: 22px 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 22px; }
+    .time-header { font-weight: bold; color: #1b5e20; font-size: 1.15em; margin-bottom: 14px; }
+    .pivot-section { background: #ffffff; padding: 22px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 22px; }
+    .pivot-section h3 { margin-top: 0; color: #0d47a1; font-size: 1.2em; margin-bottom: 15px; }
+    .pivot-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .pivot-table th, .pivot-table td { padding: 12px 14px; border-bottom: 1px solid #eee; font-size: 1em; }
+    .pivot-table th { background-color: #f1f5f9; color: #334155; }
+    .card { background: #ffffff; border-left: 5px solid #1976d2; padding: 22px 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 22px; }
+    .support { color: #d32f2f; font-weight: 600; }
+    .pivot { color: #1976d2; font-weight: 600; }
+    .resistance { color: #2e7d32; font-weight: 600; }
+    ul { padding-left: 20px; margin: 0; }
+    li { margin-bottom: 12px; font-size: 1em; color: #2c3e50; }
+"""
+
+full_html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="300">
+    <title>Live Market Feed & Pre-Market Briefing</title>
+    <style>
+{css_styles}
+    </style>
+</head>
+<body>
+    <h1>Live Market Feed & Pre-Market Briefing</h1>
+    <div class="timestamp">🕒 Last Updated: {ist_time}</div>
+    <div class="badge">🔴 15-Minute Live Commentary Stream</div>
+    <hr>
+    {briefing_section_html}
+    <h3 style="color:#2e7d32; margin-bottom:15px; font-size:1.3em;">📰 Live Market Commentary (15-Min Stream)</h3>
+    {commentary_blocks_html}
+    {pivot_table_html}
+</body>
+</html>"""
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(full_html)
+
+print("✅ Successfully generated index.html!")
