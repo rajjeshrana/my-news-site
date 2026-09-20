@@ -52,7 +52,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
-FALLBACK_IMAGE = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80"
+FALLBACK_IMAGE = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=800&q=80"
 
 def clean_url(url_str):
     match = re.search(r'https?://[^\s\]\)]+', str(url_str))
@@ -177,7 +177,7 @@ def query_groq_llm(prompt_str):
     return None
 
 if category_data:
-    print("=== Step 2: Generating Deep Infographic Stock Cards & Weekly Analysis ===")
+    print("=== Step 2: Generating Deep Light-Theme Cards & Macro Intelligence ===")
     prompt_text = "\n".join([f"[{cat}]: " + " | ".join(items) for cat, items in category_data.items()])
     
     pass1_prompt = f"""
@@ -210,33 +210,44 @@ Convert the extracted market intelligence into 5 distinct, high-density HTML <li
 Output strictly 5 HTML <li> tags formatted as follows:
 
 <li>
-<b>🎯 Top Breakout Stock Recommendations:</b><br>
-<b>• APARIND (Apar Industries):</b> Buy Range: ₹17,750–₹17,800 | Stop Loss: ₹16,528 | Target: ₹19,200–₹19,300.<br>
-<i>Technical Rationale:</i> Displays high relative strength despite broader market correction. Bullish oversold PMOX reading and 14-day RSI crossover confirm momentum resumption.<br>
-<b>• BEML:</b> Buy Range: ₹2,000–₹2,010 | Stop Loss: ₹1,920 | Target: ₹2,120–₹2,130.<br>
-<i>Technical Rationale:</i> Aerospace and defense manufacturing major retesting key 40-brick Renko moving average, offering favorable risk-reward following short-term consolidation breakout.<br>
-<b>• AEGISVOPAK (Aegis Vopak Terminals):</b> Buy Range: ₹305–₹308 | Stop Loss: ₹291 | Target: ₹335–₹340.<br>
-<i>Technical Rationale:</i> 52-week high breakout backed by surge in trading volume. Relative strength chart indicates outperformance against Nifty 500.
+<div class="card-badge category-stock">Breakout Radar</div>
+<h3 class="card-title-heading">🎯 High-Conviction Breakout Recommendations</h3>
+<div class="stock-breakdown-box">
+  <div class="stock-row"><span class="ticker">APARIND</span> <span class="tag buy">BUY: ₹17,750–₹17,800</span> <span class="tag target">TARGET: ₹19,200</span> <span class="tag sl">SL: ₹16,528</span></div>
+  <p class="rationale">Demonstrates strong relative strength despite broader market volatility. Bullish oversold PMOX reading combined with a 14-day RSI crossover signal momentum resumption.</p>
+</div>
+<div class="stock-breakdown-box">
+  <div class="stock-row"><span class="ticker">BEML</span> <span class="tag buy">BUY: ₹2,000–₹2,010</span> <span class="tag target">TARGET: ₹2,120</span> <span class="tag sl">SL: ₹1,920</span></div>
+  <p class="rationale">Defense manufacturing major retesting a key 40-brick Renko moving average, presenting a favorable risk-to-reward ratio following short-term base building.</p>
+</div>
+<div class="stock-breakdown-box">
+  <div class="stock-row"><span class="ticker">AEGISVOPAK</span> <span class="tag buy">BUY: ₹305–₹308</span> <span class="tag target">TARGET: ₹335</span> <span class="tag sl">SL: ₹291</span></div>
+  <p class="rationale">52-week high breakout accompanied by a substantial volume surge. Outperforming the Nifty 500 index across multiple timeframes.</p>
+</div>
 </li>
 
 <li>
-<b>⚡ Breaking Flashes & Geopolitics:</b><br>
-Geopolitical risk premiums remain elevated as global energy markets track US-Iran war developments and White House military movements in Greenland. Sanctions pressure on Russia intensifies as central banks monitor oil price shocks.
+<div class="card-badge category-geo">Geopolitics</div>
+<h3 class="card-title-heading">⚡ Breaking Flashes & Geopolitical Wire</h3>
+<p class="card-body-text">Geopolitical risk premiums remain elevated as global energy markets monitor ongoing Middle East developments and White House military presence discussions in Greenland. Sanctions pressure on Russia continues to intensify as central banks track potential supply disruptions.</p>
 </li>
 
 <li>
-<b>🇮🇳 Indian Stock Market Outlook:</b><br>
-Nifty 50 approaches a key historical demand confluence near 23,200–23,000, corresponding to the 61.8% Fibonacci retracement zone. While FII outflows weigh on large-cap sentiment, aggressive DII buying provides strong underlying support for select pharma and defense majors.
+<div class="card-badge category-india">Indian Equities</div>
+<h3 class="card-title-heading">🇮🇳 Indian Equities & Nifty 50 Index Outlook</h3>
+<p class="card-body-text">Nifty 50 approaches a critical historical demand confluence near 23,200–23,000, aligning with the 61.8% Fibonacci retracement level. While FII selling pressures top-tier financials, aggressive domestic institutional (DII) inflows support select defense, healthcare, and capital goods counters.</p>
 </li>
 
 <li>
-<b>🌍 US & Global Markets:</b><br>
-Wall Street benchmarks display controlled consolidation as treasury yields hold near 4.90%. Investors evaluate Federal Reserve policy commentary ahead of upcoming US CPI inflation prints and global tech earnings.
+<div class="card-badge category-global">Global Markets</div>
+<h3 class="card-title-heading">🌍 US & Global Macro Intelligence</h3>
+<p class="card-body-text">Wall Street benchmarks consolidate as 10-year Treasury yields hold near 4.90%. Market participants evaluate Federal Reserve interest rate guidance ahead of key US CPI inflation prints and upcoming mega-cap tech earnings announcements.</p>
 </li>
 
 <li>
-<b>🛢️ Forex & Commodities:</b><br>
-Brent Crude fluctuates near $80.20/bbl due to Middle East supply disruption concerns. USD/INR trades in a tight corridor between 83.35 and 83.65 as RBI interventions stabilize domestic currency volatility.
+<div class="card-badge category-comm">Forex & Energy</div>
+<h3 class="card-title-heading">🛢️ Forex & Energy Market Boundaries</h3>
+<p class="card-body-text">Brent Crude holds near $80.20/bbl supported by regional geopolitical risk. USD/INR trades within a narrow 83.35–83.65 corridor, maintained by active Reserve Bank of India foreign exchange liquidity intervention.</p>
 </li>
 
 Extracted Intelligence:
@@ -245,11 +256,10 @@ Extracted Intelligence:
     ai_bullets_html = query_groq_llm(pass2_prompt)
 
     if not ai_bullets_html:
-        print("⚠️ LLM processing unavailable. Using default formatting.")
         items_list = []
         for cat, items in category_data.items():
             combined_text = " ".join(items)
-            items_list.append(f"<li><b>{cat}:</b> {combined_text}</li>")
+            items_list.append(f"<li><div class='card-badge category-stock'>{cat}</div><h3 class='card-title-heading'>{cat}</h3><p class='card-body-text'>{combined_text}</p></li>")
         ai_bullets_html = "\n".join(items_list)
 
     web_bullets_list = []
@@ -262,17 +272,18 @@ Extracted Intelligence:
         source_link = category_links.get(cat_key, "https://rajjeshrana.github.io/my-news-site/")
         
         card_item = f"""
-        <li>
-            <div class="news-item-box">
-                <img src="{img_url}" class="news-thumb" alt="stock news" onerror="this.onerror=null;this.src='{FALLBACK_IMAGE}';">
-                <div class="news-text-content">
-                    {b_text}
-                    <div style="margin-top: 10px;">
-                        <a href="{source_link}" target="_blank" class="source-link">🔗 Read Full Research Report & Source Wire</a>
-                    </div>
+        <div class="trending-card">
+            <div class="card-image-wrap" style="background-image: url('{img_url}');">
+                <div class="image-overlay"></div>
+            </div>
+            <div class="card-content-wrap">
+                {b_text}
+                <div class="card-footer">
+                    <span class="meta-author">👤 StockVersity Desk</span>
+                    <a href="{source_link}" target="_blank" class="read-more-link">Read Full Wire ➔</a>
                 </div>
             </div>
-        </li>
+        </div>
         """
         web_bullets_list.append(card_item)
 
@@ -310,11 +321,15 @@ def send_telegram_message(time_str, html_bullets):
         return
 
     text_content = html_bullets.replace("<li>", "• ").replace("</li>", "\n\n").replace("<br>", "\n")
+    text_content = re.sub(r'<div[^>]*>', '', text_content).replace('</div>', '')
+    text_content = re.sub(r'<span[^>]*>', '', text_content).replace('</span>', '')
+    text_content = re.sub(r'<h3[^>]*>', '<b>').replace('</h3>', '</b>\n')
+    
     message_body = (
-        f"🔥 <b>StockVersity Stock Radar & Detailed Commentary</b>\n"
+        f"🔥 <b>StockVersity Light Terminal Intelligence Update</b>\n"
         f"⏱️ <i>{time_str}</i>\n\n"
         f"{text_content}\n"
-        f"🌐 <a href='https://rajjeshrana.github.io/my-news-site/'>View Full Terminal Dashboard</a>"
+        f"🌐 <a href='https://rajjeshrana.github.io/my-news-site/'>Open Dashboard</a>"
     )
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -338,42 +353,41 @@ if ai_bullets_html:
     send_telegram_message(current_time_str, ai_bullets_html)
 
 # ==========================================
-# 5. RENDER HTML PAGE WITH STRICT TIME-AWARE LAYOUT
+# 5. RENDER HTML PAGE WITH LIGHT THEME UI
 # ==========================================
-print("=== Step 4: Formatting HTML Output ===")
+print("=== Step 4: Formatting Light Theme Mosaic Layout ===")
 
-commentary_blocks_html = ""
-for block in blocks_history[:10]:
-    t_stamp = block.get("timestamp", "Live Update")
-    content = block.get("html_content", "")
-    commentary_blocks_html += f"""
-    <div class="time-card">
-        <div class="time-header">⏱️ {t_stamp} Update</div>
-        <ul>
-            {content}
-        </ul>
+latest_block = blocks_history[0] if blocks_history else {}
+latest_cards_html = latest_block.get("html_content", "")
+latest_timestamp = latest_block.get("timestamp", formatted_time)
+
+featured_mosaic_html = f"""
+<div class="featured-mosaic-grid">
+    <!-- Main Large Feature Card -->
+    <div class="mosaic-item large-hero" style="background-image: url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80');">
+        <div class="mosaic-overlay"></div>
+        <div class="mosaic-content">
+            <span class="yellow-badge">FEATURED RESEARCH</span>
+            <span class="mosaic-date">⏱️ {latest_timestamp}</span>
+            <h2 class="mosaic-title">New Research: Institutional Flows, Nifty Confluence Zones & Weekly Breakouts</h2>
+        </div>
     </div>
-    """
+    
+    <!-- Top Right Card -->
+    <div class="mosaic-item medium-top" style="background-image: url('https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80');">
+        <div class="mosaic-overlay"></div>
+        <div class="mosaic-content">
+            <span class="yellow-badge">BREAKOUTS</span>
+            <h3 class="mosaic-title-sm">APARIND, BEML & Aegis Vopak Lead Momentum Charts</h3>
+        </div>
+    </div>
 
-# Infographic Stock Setup Banner
-stock_radar_card = """
-<div class="stock-radar-card">
-    <div class="stock-radar-header">🔥 High-Conviction Breakout Stocks & Targets</div>
-    <div class="stock-radar-grid">
-        <div class="stock-item">
-            <span class="stock-symbol">APARIND</span>
-            <span class="stock-target">Buy: ₹17,750 | Target: ₹19,200</span>
-            <span class="stock-bias bullish">RSI & PMOX Crossover</span>
-        </div>
-        <div class="stock-item">
-            <span class="stock-symbol">BEML</span>
-            <span class="stock-target">Buy: ₹2,000 | Target: ₹2,120</span>
-            <span class="stock-bias bullish">40-Brick Renko Retest</span>
-        </div>
-        <div class="stock-item">
-            <span class="stock-symbol">AEGISVOPAK</span>
-            <span class="stock-target">Buy: ₹305 | Target: ₹335</span>
-            <span class="stock-bias bullish">52-Week High Breakout</span>
+    <!-- Bottom Right Card -->
+    <div class="mosaic-item medium-bottom" style="background-image: url('https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=800&q=80');">
+        <div class="mosaic-overlay"></div>
+        <div class="mosaic-content">
+            <span class="yellow-badge">GLOBAL MACRO</span>
+            <h3 class="mosaic-title-sm">Geopolitical Flashes: Crude Oil Holds Near $80 as Fed Tracks CPI</h3>
         </div>
     </div>
 </div>
@@ -381,17 +395,20 @@ stock_radar_card = """
 
 pivot_table_html = """
 <div class="pivot-section">
-    <h3>📊 Key Indices Pivot Points & Support/Resistance</h3>
+    <div class="section-title-wrap">
+        <span class="yellow-badge">BENCHMARKS</span>
+        <h2 class="section-heading-text">Key Indices Pivot Matrix</h2>
+    </div>
     <table class="pivot-table">
         <thead>
             <tr><th>Index / Asset</th><th>Support (S1)</th><th>Pivot Point (P)</th><th>Resistance (R1)</th><th>Market Stance</th></tr>
         </thead>
         <tbody>
-            <tr><td><b>Nifty 50</b></td><td class="support">23,210</td><td class="pivot">23,300</td><td class="resistance">23,390</td><td><span style="color:#2e7d32; font-weight:bold;">Bullish Consolidation</span></td></tr>
-            <tr><td><b>Bank Nifty</b></td><td class="support">49,550</td><td class="pivot">49,800</td><td class="resistance">50,050</td><td><span style="color:#1976d2; font-weight:bold;">Rangebound</span></td></tr>
-            <tr><td><b>Sensex</b></td><td class="support">76,200</td><td class="pivot">76,500</td><td class="resistance">76,800</td><td><span style="color:#2e7d32; font-weight:bold;">Bullish Consolidation</span></td></tr>
-            <tr><td><b>USD / INR</b></td><td class="support">83.35</td><td class="pivot">83.50</td><td class="resistance">83.65</td><td><span style="color:#d32f2f; font-weight:bold;">Rupee Bounded</span></td></tr>
-            <tr><td><b>Crude Oil (Brent)</b></td><td class="support">$78.50</td><td class="pivot">$80.20</td><td class="resistance">$82.00</td><td><span style="color:#d32f2f; font-weight:bold;">Cooling Off</span></td></tr>
+            <tr><td><b>Nifty 50</b></td><td class="support">23,210</td><td class="pivot">23,300</td><td class="resistance">23,390</td><td><span class="stance-badge bullish">Bullish Consolidation</span></td></tr>
+            <tr><td><b>Bank Nifty</b></td><td class="support">49,550</td><td class="pivot">49,800</td><td class="resistance">50,050</td><td><span class="stance-badge rangebound">Rangebound</span></td></tr>
+            <tr><td><b>Sensex</b></td><td class="support">76,200</td><td class="pivot">76,500</td><td class="resistance">76,800</td><td><span class="stance-badge bullish">Bullish Consolidation</span></td></tr>
+            <tr><td><b>USD / INR</b></td><td class="support">83.35</td><td class="pivot">83.50</td><td class="resistance">83.65</td><td><span class="stance-badge bearish">Rupee Bounded</span></td></tr>
+            <tr><td><b>Crude Oil (Brent)</b></td><td class="support">$78.50</td><td class="pivot">$80.20</td><td class="resistance">$82.00</td><td><span class="stance-badge bearish">Cooling Off</span></td></tr>
         </tbody>
     </table>
 </div>
@@ -399,58 +416,306 @@ pivot_table_html = """
 
 ist_time = now_ist.strftime("%b %d, %Y | %I:%M %p IST")
 
-# Strict pre-market window check: 7:00 AM (07:00) to 9:30 AM (09:30) IST
-current_time_num = now_ist.hour * 100 + now_ist.minute
-is_premarket_window = (700 <= current_time_num <= 930)
-
-if is_premarket_window:
-    main_dashboard_body = f"""
-    {stock_radar_card}
-    <h3 style="color:#16a34a; margin-bottom:18px; font-size:1.35em;">📰 Deep Stock Breakdown & Macro Commentary</h3>
-    {commentary_blocks_html}
-    {pivot_table_html}
-    """
-else:
-    main_dashboard_body = f"""
-    <h3 style="color:#16a34a; margin-bottom:18px; font-size:1.35em;">📰 Deep Stock Breakdown & Macro Commentary</h3>
-    {commentary_blocks_html}
-    {stock_radar_card}
-    {pivot_table_html}
-    """
-
 css_styles = """
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 940px; margin: 30px auto; padding: 20px; color: #1e293b; line-height: 1.6; background-color: #f8fafc; }
-    h1 { color: #0f172a; font-size: 2.2em; margin-bottom: 5px; letter-spacing: -0.5px; }
-    .timestamp { color: #64748b; font-weight: 600; font-size: 0.95em; margin-bottom: 15px; }
-    .badge { background: #dcfce7; color: #15803d; padding: 6px 14px; border-radius: 20px; font-size: 0.85em; font-weight: bold; display: inline-block; margin-bottom: 20px; border: 1px solid #bbf7d0; }
-    hr { border: 0; height: 1px; background: #e2e8f0; margin-bottom: 25px; }
-    
-    .stock-radar-card { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; padding: 22px 26px; border-radius: 14px; margin-bottom: 25px; box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.3); }
-    .stock-radar-header { font-size: 1.3em; font-weight: 700; margin-bottom: 16px; letter-spacing: -0.3px; }
-    .stock-radar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-    .stock-item { background: rgba(255, 255, 255, 0.12); padding: 14px 18px; border-radius: 10px; backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); }
-    .stock-symbol { display: block; font-weight: 800; font-size: 1.1em; color: #ffffff; }
-    .stock-target { display: block; font-size: 0.9em; color: #f1f5f9; margin-top: 4px; }
-    .stock-bias { display: inline-block; font-size: 0.78em; font-weight: 700; padding: 3px 10px; border-radius: 6px; margin-top: 8px; }
-    .bullish { background: #16a34a; color: #ffffff; }
+    * { box-sizing: border-box; }
+    body { 
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+        max-width: 1200px; 
+        margin: 0 auto; 
+        padding: 20px; 
+        color: #1e293b; 
+        line-height: 1.5; 
+        background-color: #f8fafc; 
+    }
 
-    .time-card { background: #ffffff; border-left: 6px solid #16a34a; padding: 24px 28px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 24px; border-top: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
-    .time-header { font-weight: 700; color: #15803d; font-size: 1.2em; margin-bottom: 18px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
-    .pivot-section { background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 24px; }
-    .pivot-section h3 { margin-top: 0; color: #1e3a8a; font-size: 1.25em; margin-bottom: 16px; }
+    /* TOP LOGO / HEADER BAR */
+    .top-header-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e2e8f0;
+        margin-bottom: 25px;
+    }
+
+    .brand-title {
+        font-size: 2.2em;
+        font-weight: 900;
+        letter-spacing: -1px;
+        color: #0f172a;
+        text-transform: uppercase;
+    }
+
+    .brand-title span { color: #d97706; }
+
+    .header-time {
+        font-size: 0.9em;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    /* FEATURED MOSAIC GRID (HERO TOP SECTION) */
+    .featured-mosaic-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: 220px 220px;
+        gap: 15px;
+        margin-bottom: 40px;
+    }
+
+    .mosaic-item {
+        position: relative;
+        background-size: cover;
+        background-position: center;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .mosaic-item.large-hero {
+        grid-row: span 2;
+    }
+
+    .mosaic-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.2) 0%, rgba(15, 23, 42, 0.85) 90%);
+    }
+
+    .mosaic-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 22px;
+        z-index: 2;
+    }
+
+    .yellow-badge {
+        background-color: #d97706;
+        color: #ffffff;
+        font-size: 0.72em;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+    }
+
+    .mosaic-date {
+        color: #e2e8f0;
+        font-size: 0.82em;
+        margin-left: 8px;
+        font-weight: 600;
+    }
+
+    .mosaic-title {
+        font-size: 1.65em;
+        font-weight: 800;
+        color: #ffffff;
+        margin: 6px 0 0 0;
+        line-height: 1.3;
+    }
+
+    .mosaic-title-sm {
+        font-size: 1.1em;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 4px 0 0 0;
+        line-height: 1.3;
+    }
+
+    /* TRENDING NOW SECTION HEADER */
+    .section-header-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 25px;
+    }
+
+    .section-main-heading {
+        font-size: 2em;
+        font-weight: 800;
+        color: #94a3b8;
+        letter-spacing: -0.5px;
+        margin: 0;
+    }
+
+    .section-main-heading b {
+        color: #0f172a;
+    }
+
+    /* TRENDING NOW 3-COLUMN CARD GRID */
+    .trending-grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 22px;
+        margin-bottom: 40px;
+    }
+
+    .trending-card {
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-image-wrap {
+        height: 180px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+
+    .image-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 100%);
+    }
+
+    .card-content-wrap {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-badge {
+        display: inline-block;
+        font-size: 0.72em;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 3px;
+        margin-bottom: 10px;
+    }
+
+    .category-stock { background-color: #d97706; color: #fff; }
+    .category-geo { background-color: #dc2626; color: #fff; }
+    .category-india { background-color: #0284c7; color: #fff; }
+    .category-global { background-color: #9333ea; color: #fff; }
+    .category-comm { background-color: #16a34a; color: #fff; }
+
+    .card-title-heading {
+        font-size: 1.15em;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 12px 0;
+        line-height: 1.35;
+    }
+
+    .card-body-text {
+        font-size: 0.92em;
+        color: #334155;
+        line-height: 1.6;
+        margin: 0 0 15px 0;
+    }
+
+    /* STOCK BREAKDOWN BOXES INSIDE CARDS */
+    .stock-breakdown-box {
+        background-color: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        padding: 10px 12px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+
+    .stock-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        font-size: 0.9em;
+        margin-bottom: 4px;
+    }
+
+    .ticker { font-weight: 800; color: #0f172a; }
+
+    .tag {
+        font-size: 0.72em;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 3px;
+    }
+
+    .tag.buy { background: #e0f2fe; color: #0369a1; }
+    .tag.target { background: #dcfce7; color: #15803d; }
+    .tag.sl { background: #fee2e2; color: #b91c1c; }
+
+    .rationale {
+        font-size: 0.85em;
+        color: #475569;
+        margin: 0;
+        line-height: 1.45;
+    }
+
+    .card-footer {
+        margin-top: auto;
+        padding-top: 14px;
+        border-top: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.82em;
+    }
+
+    .meta-author { color: #64748b; font-weight: 600; }
+    .read-more-link { color: #d97706; font-weight: 700; text-decoration: none; }
+    .read-more-link:hover { text-decoration: underline; }
+
+    /* PIVOT TABLE SECTION */
+    .pivot-section {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        margin-bottom: 30px;
+    }
+
+    .section-title-wrap {
+        margin-bottom: 15px;
+    }
+
+    .section-heading-text {
+        font-size: 1.3em;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 4px 0 0 0;
+    }
+
     .pivot-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .pivot-table th, .pivot-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.98em; }
-    .pivot-table th { background-color: #f8fafc; color: #475569; font-weight: 700; }
-    .support { color: #dc2626; font-weight: 600; }
-    .pivot { color: #2563eb; font-weight: 600; }
-    .resistance { color: #16a34a; font-weight: 600; }
-    ul { padding-left: 0; list-style: none; margin: 0; }
-    li { margin-bottom: 20px; font-size: 1.02em; color: #334155; }
-    .news-item-box { display: flex; align-items: flex-start; gap: 18px; background: #ffffff; padding: 16px; border-radius: 10px; border: 1px solid #e2e8f0; }
-    .news-thumb { width: 90px; height: 90px; border-radius: 10px; object-fit: cover; flex-shrink: 0; background-color: #e2e8f0; }
-    .news-text-content { flex-grow: 1; font-size: 1em; line-height: 1.6; }
-    .source-link { color: #0284c7; font-size: 0.85em; font-weight: 700; text-decoration: none; display: inline-block; }
-    .source-link:hover { text-decoration: underline; color: #0369a1; }
+    .pivot-table th, .pivot-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-size: 0.92em; }
+    .pivot-table th { background-color: #f8fafc; color: #64748b; font-weight: 700; }
+
+    .support { color: #dc2626; font-weight: 700; }
+    .pivot { color: #2563eb; font-weight: 700; }
+    .resistance { color: #16a34a; font-weight: 700; }
+
+    .stance-badge {
+        font-size: 0.78em;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 3px;
+    }
+
+    .stance-badge.bullish { background: #dcfce7; color: #15803d; }
+    .stance-badge.rangebound { background: #fef3c7; color: #b45309; }
+    .stance-badge.bearish { background: #fee2e2; color: #b91c1c; }
+
+    @media (max-width: 850px) {
+        .featured-mosaic-grid {
+            grid-template-columns: 1fr;
+            grid-template-rows: auto;
+        }
+        .mosaic-item.large-hero { grid-row: auto; height: 260px; }
+        .mosaic-item { height: 180px; }
+    }
 """
 
 full_html = f"""<!DOCTYPE html>
@@ -459,21 +724,33 @@ full_html = f"""<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="300">
-    <title>StockVersity Live Market & Stock Terminal</title>
+    <title>StockVersity Terminal | Light Intelligence</title>
     <style>
 {css_styles}
     </style>
 </head>
 <body>
-    <h1>StockVersity Live Market & Stock Terminal</h1>
-    <div class="timestamp">🕒 Last Updated: {ist_time}</div>
-    <div class="badge">🔴 15-Min Quantitative Market Stream</div>
-    <hr>
-    {main_dashboard_body}
+    <div class="top-header-bar">
+        <div class="brand-title">Stock<span>Versity</span></div>
+        <div class="header-time">🕒 {ist_time}</div>
+    </div>
+
+    {featured_mosaic_html}
+
+    <div class="section-header-bar">
+        <span class="yellow-badge">DON'T MISS</span>
+        <h2 class="section-main-heading"><b>Trending</b> Now</h2>
+    </div>
+
+    <div class="trending-grid-container">
+        {latest_cards_html}
+    </div>
+
+    {pivot_table_html}
 </body>
 </html>"""
 
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("✅ Successfully generated index.html with reverted GitHub Pages URL!")
+print("✅ Successfully generated light-theme magazine mosaic index.html!")
