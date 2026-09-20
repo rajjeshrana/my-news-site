@@ -144,7 +144,7 @@ for cat_name, feed_urls in CATEGORY_FEEDS.items():
     if cleaned_titles:
         category_data[cat_name] = cleaned_titles[:6]
         category_images[cat_name] = cat_img or FALLBACK_IMAGE
-        category_links[cat_name] = first_link or "https://news.google.com"
+        category_links[cat_name] = first_link or "https://rajjeshrana.github.io/my-news-site/"
 
 # ==========================================
 # 3. ADVANCED LLM INFOGRAPHIC CARD GENERATION
@@ -259,7 +259,7 @@ Extracted Intelligence:
     for idx, b_text in enumerate(bullets_matches):
         cat_key = cat_keys[idx if idx < len(cat_keys) else 0]
         img_url = category_images.get(cat_key, FALLBACK_IMAGE)
-        source_link = category_links.get(cat_key, "https://stockversity.in/")
+        source_link = category_links.get(cat_key, "https://rajjeshrana.github.io/my-news-site/")
         
         card_item = f"""
         <li>
@@ -311,9 +311,10 @@ def send_telegram_message(time_str, html_bullets):
 
     text_content = html_bullets.replace("<li>", "• ").replace("</li>", "\n\n").replace("<br>", "\n")
     message_body = (
-        f"🔥 <b>StockVersity Stock Radar & Detailed Commentary ({time_str})</b>\n\n"
+        f"🔥 <b>StockVersity Stock Radar & Detailed Commentary</b>\n"
+        f"⏱️ <i>{time_str}</i>\n\n"
         f"{text_content}\n"
-        f"🌐 <a href='https://stockversity.in/'>View Full Terminal Dashboard</a>"
+        f"🌐 <a href='https://rajjeshrana.github.io/my-news-site/'>View Full Terminal Dashboard</a>"
     )
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -475,4 +476,4 @@ full_html = f"""<!DOCTYPE html>
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("✅ Successfully generated index.html with full date and time stamps!")
+print("✅ Successfully generated index.html with reverted GitHub Pages URL!")
