@@ -157,11 +157,13 @@ def query_groq_llm(prompt_str):
         return None
     groq_url = "https://api.groq.com/openai/v1/chat/completions"
     groq_headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
+    
+    # Active Groq Models List
     models_to_try = [
         "llama-3.3-70b-versatile", 
         "llama-3.1-8b-instant", 
-        "llama3-70b-8192", 
-        "mixtral-8x7b-32768"
+        "llama-3.2-11b-vision-preview", 
+        "llama3-8b-8192"
     ]
     for model in models_to_try:
         try:
@@ -323,7 +325,9 @@ def send_telegram_message(time_str, html_bullets):
     text_content = html_bullets.replace("<li>", "• ").replace("</li>", "\n\n").replace("<br>", "\n")
     text_content = re.sub(r'<div[^>]*>', '', text_content).replace('</div>', '')
     text_content = re.sub(r'<span[^>]*>', '', text_content).replace('</span>', '')
-    text_content = re.sub(r'<h3[^>]*>', '<b>').replace('</h3>', '</b>\n')
+    
+    # Corrected regex parameter syntax
+    text_content = re.sub(r'<h3[^>]*>', '<b>', text_content).replace('</h3>', '</b>\n')
     
     message_body = (
         f"🔥 <b>StockVersity Light Terminal Intelligence Update</b>\n"
@@ -363,7 +367,6 @@ latest_timestamp = latest_block.get("timestamp", formatted_time)
 
 featured_mosaic_html = f"""
 <div class="featured-mosaic-grid">
-    <!-- Main Large Feature Card -->
     <div class="mosaic-item large-hero" style="background-image: url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80');">
         <div class="mosaic-overlay"></div>
         <div class="mosaic-content">
@@ -373,7 +376,6 @@ featured_mosaic_html = f"""
         </div>
     </div>
     
-    <!-- Top Right Card -->
     <div class="mosaic-item medium-top" style="background-image: url('https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80');">
         <div class="mosaic-overlay"></div>
         <div class="mosaic-content">
@@ -382,7 +384,6 @@ featured_mosaic_html = f"""
         </div>
     </div>
 
-    <!-- Bottom Right Card -->
     <div class="mosaic-item medium-bottom" style="background-image: url('https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=800&q=80');">
         <div class="mosaic-overlay"></div>
         <div class="mosaic-content">
@@ -428,7 +429,6 @@ css_styles = """
         background-color: #f8fafc; 
     }
 
-    /* TOP LOGO / HEADER BAR */
     .top-header-bar {
         display: flex;
         justify-content: space-between;
@@ -454,7 +454,6 @@ css_styles = """
         font-weight: 600;
     }
 
-    /* FEATURED MOSAIC GRID (HERO TOP SECTION) */
     .featured-mosaic-grid {
         display: grid;
         grid-template-columns: 2fr 1fr;
@@ -472,9 +471,7 @@ css_styles = """
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
 
-    .mosaic-item.large-hero {
-        grid-row: span 2;
-    }
+    .mosaic-item.large-hero { grid-row: span 2; }
 
     .mosaic-overlay {
         position: absolute;
@@ -484,9 +481,7 @@ css_styles = """
 
     .mosaic-content {
         position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
+        bottom: 0; left: 0; right: 0;
         padding: 22px;
         z-index: 2;
     }
@@ -527,7 +522,6 @@ css_styles = """
         line-height: 1.3;
     }
 
-    /* TRENDING NOW SECTION HEADER */
     .section-header-bar {
         display: flex;
         align-items: center;
@@ -543,11 +537,8 @@ css_styles = """
         margin: 0;
     }
 
-    .section-main-heading b {
-        color: #0f172a;
-    }
+    .section-main-heading b { color: #0f172a; }
 
-    /* TRENDING NOW 3-COLUMN CARD GRID */
     .trending-grid-container {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -616,7 +607,6 @@ css_styles = """
         margin: 0 0 15px 0;
     }
 
-    /* STOCK BREAKDOWN BOXES INSIDE CARDS */
     .stock-breakdown-box {
         background-color: #f1f5f9;
         border: 1px solid #e2e8f0;
@@ -668,7 +658,6 @@ css_styles = """
     .read-more-link { color: #d97706; font-weight: 700; text-decoration: none; }
     .read-more-link:hover { text-decoration: underline; }
 
-    /* PIVOT TABLE SECTION */
     .pivot-section {
         background-color: #ffffff;
         border: 1px solid #e2e8f0;
@@ -678,9 +667,7 @@ css_styles = """
         margin-bottom: 30px;
     }
 
-    .section-title-wrap {
-        margin-bottom: 15px;
-    }
+    .section-title-wrap { margin-bottom: 15px; }
 
     .section-heading-text {
         font-size: 1.3em;
@@ -753,4 +740,4 @@ full_html = f"""<!DOCTYPE html>
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("✅ Successfully generated light-theme magazine mosaic index.html!")
+print("✅ Successfully generated corrected app.py!")
