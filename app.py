@@ -82,10 +82,12 @@ print("=== Step 1: Ingesting Live Multi-Source Market Feeds ===")
 now_ist = datetime.now(ZoneInfo("Asia/Kolkata"))
 is_weekend = now_ist.weekday() in [5, 6]
 
+formatted_time = now_ist.strftime("%b %d, %Y | %I:%M %p IST")
+
 if is_weekend:
-    current_time_str = now_ist.strftime("%b %d, %Y") + " (Weekend Stock & Macro Radar)"
+    current_time_str = f"{formatted_time} (Weekend Stock & Macro Radar)"
 else:
-    current_time_str = now_ist.strftime("%I:%M %p IST")
+    current_time_str = f"{formatted_time} (Live Market Stream)"
 
 now_utc = datetime.now(timezone.utc)
 
@@ -179,7 +181,7 @@ if category_data:
     prompt_text = "\n".join([f"[{cat}]: " + " | ".join(items) for cat, items in category_data.items()])
     
     pass1_prompt = f"""
-You are an institutional research desk analyst preparing a full weekend stock breakdown report for Indian equity markets.
+You are an institutional research desk analyst preparing a full stock breakdown report for Indian equity markets.
 Parse the provided market news and extract detailed stock recommendations and technical setups:
 
 STRICT INSTRUCTIONS:
@@ -257,7 +259,7 @@ Extracted Intelligence:
     for idx, b_text in enumerate(bullets_matches):
         cat_key = cat_keys[idx if idx < len(cat_keys) else 0]
         img_url = category_images.get(cat_key, FALLBACK_IMAGE)
-        source_link = category_links.get(cat_key, "https://news.google.com")
+        source_link = category_links.get(cat_key, "https://stockversity.in/")
         
         card_item = f"""
         <li>
@@ -309,9 +311,9 @@ def send_telegram_message(time_str, html_bullets):
 
     text_content = html_bullets.replace("<li>", "• ").replace("</li>", "\n\n").replace("<br>", "\n")
     message_body = (
-        f"🔥 <b>StockVersity Weekend Stock Radar & Detailed Commentary ({time_str})</b>\n\n"
+        f"🔥 <b>StockVersity Stock Radar & Detailed Commentary ({time_str})</b>\n\n"
         f"{text_content}\n"
-        f"🌐 <a href='https://rajjeshrana.github.io/my-news-site/'>View Full Terminal Dashboard</a>"
+        f"🌐 <a href='https://stockversity.in/'>View Full Terminal Dashboard</a>"
     )
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -355,7 +357,7 @@ for block in blocks_history[:10]:
 # Infographic Stock Setup Banner
 stock_radar_card = """
 <div class="stock-radar-card">
-    <div class="stock-radar-header">🔥 High-Conviction Breakout Stocks & Targets (Next Week)</div>
+    <div class="stock-radar-header">🔥 High-Conviction Breakout Stocks & Targets</div>
     <div class="stock-radar-grid">
         <div class="stock-item">
             <span class="stock-symbol">APARIND</span>
@@ -456,15 +458,15 @@ full_html = f"""<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="300">
-    <title>Weekend Stock Radar & Market Terminal</title>
+    <title>StockVersity Live Market & Stock Terminal</title>
     <style>
 {css_styles}
     </style>
 </head>
 <body>
-    <h1>Weekend Stock Radar & Market Terminal</h1>
+    <h1>StockVersity Live Market & Stock Terminal</h1>
     <div class="timestamp">🕒 Last Updated: {ist_time}</div>
-    <div class="badge">🔴 Weekend Detailed Stock Research Mode</div>
+    <div class="badge">🔴 15-Min Quantitative Market Stream</div>
     <hr>
     {main_dashboard_body}
 </body>
@@ -473,4 +475,4 @@ full_html = f"""<!DOCTYPE html>
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("✅ Successfully generated index.html with Infographic Stock Cards!")
+print("✅ Successfully generated index.html with full date and time stamps!")
