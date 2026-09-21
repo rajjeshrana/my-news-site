@@ -146,7 +146,6 @@ for cat_name, feed_urls in CATEGORY_FEEDS.items():
         category_images[cat_name] = cat_img or FALLBACK_IMAGE
         category_links[cat_name] = first_link or "https://rajjeshrana.github.io/my-news-site/"
 
-# Fallback link mapping
 link_featured = category_links.get("Indian Stock Market", "https://rajjeshrana.github.io/my-news-site/")
 link_breakouts = category_links.get("🎯 Breakout Stock Setups", "https://rajjeshrana.github.io/my-news-site/")
 link_macro = category_links.get("⚡ Breaking Flashes & Geopolitics", "https://rajjeshrana.github.io/my-news-site/")
@@ -331,7 +330,7 @@ def send_telegram_message(time_str, html_bullets):
     text_content = html_bullets.replace("<li>", "• ").replace("</li>", "\n\n").replace("<br>", "\n")
     text_content = re.sub(r'<div[^>]*>', '', text_content).replace('</div>', '')
     text_content = re.sub(r'<span[^>]*>', '', text_content).replace('</span>', '')
-    text_content = re.sub(r'<h3[^>]*>', '<b>', text_content).replace('3>', '</b>\n')
+    text_content = re.sub(r'<h3[^>]*>', '<b>', text_content).replace('</h3>', '</b>\n')
     
     message_body = (
         f"🔥 <b>StockVersity Light Terminal Intelligence Update</b>\n"
@@ -361,7 +360,7 @@ if ai_bullets_html:
     send_telegram_message(current_time_str, ai_bullets_html)
 
 # ==========================================
-# 5. RENDER HTML PAGE WITH CLICKABLE MOSAIC UI
+# 5. RENDER HTML PAGE WITH MORNING BRIEFING
 # ==========================================
 print("=== Step 4: Formatting Light Theme Clickable Mosaic Layout ===")
 
@@ -369,10 +368,21 @@ latest_block = blocks_history[0] if blocks_history else {}
 latest_cards_html = latest_block.get("html_content", "")
 latest_timestamp = latest_block.get("timestamp", formatted_time)
 
+# Dedicated Morning Briefing Banner
+morning_briefing_banner = f"""
+<div class="morning-briefing-card">
+    <div class="briefing-header">
+        <span class="yellow-badge">MORNING BRIEFING</span>
+        <span class="briefing-time">🌅 {formatted_time}</span>
+    </div>
+    <h2 class="briefing-title">Pre-Market Market Setup & Institutional Intelligence Briefing</h2>
+    <p class="briefing-desc">Comprehensive morning synthesis covering Nifty 50 demand levels, high-conviction breakout technical setups, and geopolitical energy market boundaries.</p>
+</div>
+"""
+
 # Clickable Featured Mosaic Hero Section
 featured_mosaic_html = f"""
 <div class="featured-mosaic-grid">
-    <!-- Main Large Feature Card (Clickable) -->
     <a href="{link_featured}" target="_blank" class="mosaic-link large-hero">
         <div class="mosaic-item" style="background-image: url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80');">
             <div class="mosaic-overlay"></div>
@@ -384,7 +394,6 @@ featured_mosaic_html = f"""
         </div>
     </a>
     
-    <!-- Top Right Card (Clickable) -->
     <a href="{link_breakouts}" target="_blank" class="mosaic-link medium-top">
         <div class="mosaic-item" style="background-image: url('https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80');">
             <div class="mosaic-overlay"></div>
@@ -395,7 +404,6 @@ featured_mosaic_html = f"""
         </div>
     </a>
 
-    <!-- Bottom Right Card (Clickable) -->
     <a href="{link_macro}" target="_blank" class="mosaic-link medium-bottom">
         <div class="mosaic-item" style="background-image: url('https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=800&q=80');">
             <div class="mosaic-overlay"></div>
@@ -466,6 +474,44 @@ css_styles = """
         font-size: 0.9em;
         color: #64748b;
         font-weight: 600;
+    }
+
+    /* MORNING BRIEFING BANNER STYLING */
+    .morning-briefing-card {
+        background: linear-gradient(135deg, #ffffff, #f1f5f9);
+        border: 1px solid #cbd5e1;
+        border-left: 6px solid #d97706;
+        border-radius: 8px;
+        padding: 20px 24px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    }
+
+    .briefing-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+
+    .briefing-time {
+        font-size: 0.88em;
+        color: #64748b;
+        font-weight: 700;
+    }
+
+    .briefing-title {
+        font-size: 1.35em;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 6px 0;
+    }
+
+    .briefing-desc {
+        font-size: 0.95em;
+        color: #475569;
+        margin: 0;
+        line-height: 1.5;
     }
 
     /* CLICKABLE MOSAIC WRAPPERS */
@@ -741,7 +787,7 @@ full_html = f"""<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="300">
-    <title>StockVersity Terminal | Clickable Light Intelligence</title>
+    <title>StockVersity Terminal | Light Intelligence</title>
     <style>
 {css_styles}
     </style>
@@ -751,6 +797,8 @@ full_html = f"""<!DOCTYPE html>
         <div class="brand-title">Stock<span>Versity</span></div>
         <div class="header-time">🕒 {ist_time}</div>
     </div>
+
+    {morning_briefing_banner}
 
     {featured_mosaic_html}
 
@@ -770,4 +818,4 @@ full_html = f"""<!DOCTYPE html>
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("✅ Successfully generated clickable hero card index.html!")
+print("✅ Successfully generated web index.html with Morning Briefing!")
