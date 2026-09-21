@@ -22,24 +22,25 @@ GREENAPI_API_TOKEN = os.getenv("GREENAPI_API_TOKEN", "").strip().strip("'").stri
 GREENAPI_CHAT_ID = os.getenv("GREENAPI_CHAT_ID", "").strip().strip("'").strip('"')
 
 CATEGORY_FEEDS = {
-    "🎯 Breakout Stock Setups": [
-        "https://news.google.com/rss/search?q=top+stocks+to+buy+today+target+stoploss+when:3d&hl=en-IN&gl=IN&ceid=IN:en",
-        "https://news.google.com/rss/search?q=stock+market+recommendations+when:3d&hl=en-IN&gl=IN&ceid=IN:en",
+    "Macro Intelligence": [
+        "https://news.google.com/rss/search?q=Nifty+Sensex+stock+market+India+macro+when:2d&hl=en-IN&gl=IN&ceid=IN:en",
         "https://www.business-standard.com/rss/markets-106.rss",
-        "https://www.financialexpress.com/market/feed/",
         "https://www.livemint.com/rss/markets"
     ],
-    "⚡ Breaking Flashes & Geopolitics": [
-        "https://news.google.com/rss/search?q=site:twitter.com+OR+site:x.com+breaking+news+when:2d&hl=en-US&gl=US&ceid=US:en",
-        "https://news.google.com/rss/search?q=financialjuice+OR+ForexLive+breaking+when:2d&hl=en-US&gl=US&ceid=US:en",
-        "https://www.forexlive.com/feed/news",
-        "https://www.fxstreet.com/rss/news"
+    "🎯 Breakout Stock Setups": [
+        "https://news.google.com/rss/search?q=top+stocks+to+buy+today+target+stoploss+when:3d&hl=en-IN&gl=IN&ceid=IN:en",
+        "https://www.financialexpress.com/market/feed/",
+        "https://economictimes.indiatimes.com/markets/stocks/recoms/rssfeeds/2146842.cms"
     ],
     "Indian Stock Market": [
         "https://news.google.com/rss/search?q=Nifty+Sensex+stock+market+India+breaking+when:2d&hl=en-IN&gl=IN&ceid=IN:en",
         "https://www.ndtvprofit.com/rss/markets.xml",
-        "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
         "https://www.moneycontrol.com/rss/MCtopnews.xml"
+    ],
+    "⚡ Breaking Flashes & Geopolitics": [
+        "https://news.google.com/rss/search?q=geopolitics+breaking+news+when:2d&hl=en-US&gl=US&ceid=US:en",
+        "https://www.forexlive.com/feed/news",
+        "https://www.fxstreet.com/rss/news"
     ],
     "US & Global Markets": [
         "https://news.google.com/rss/search?q=Wall+Street+Nasdaq+SP500+breaking+news+when:2d&hl=en-US&gl=US&ceid=US:en",
@@ -57,25 +58,17 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
-FALLBACK_IMAGE = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=800&q=80"
-
 def clean_url(url_str):
     match = re.search(r'https?://[^\s\]\)]+', str(url_str))
     return match.group(0) if match else url_str
 
 # ==========================================
-# 2. INGEST HEADLINES & DEDUPLICATION CHECK
+# 2. INGEST HEADLINES WITH LINKS
 # ==========================================
 print("=== Step 1: Ingesting Live Multi-Source Market Feeds ===")
 now_ist = datetime.now(ZoneInfo("Asia/Kolkata"))
-is_weekend = now_ist.weekday() in [5, 6]
 formatted_time = now_ist.strftime("%b %d, %Y | %I:%M %p IST")
-
-if is_weekend:
-    current_time_str = f"{formatted_time} (Weekend Stock & Macro Radar)"
-else:
-    current_time_str = f"{formatted_time} (Live Market Stream)"
-
+current_time_str = f"{formatted_time} (Live Terminal Stream)"
 now_utc = datetime.now(timezone.utc)
 
 HISTORY_FILE = "history.json"
@@ -93,7 +86,7 @@ if os.path.exists(HISTORY_FILE):
 category_data = {}
 
 for cat_name, feed_urls in CATEGORY_FEEDS.items():
-    cleaned_titles = []
+    cleaned_items = []
     for feed_url in feed_urls:
         try:
             resp = requests.get(clean_url(feed_url), headers=HEADERS, timeout=8)
@@ -101,64 +94,38 @@ for cat_name, feed_urls in CATEGORY_FEEDS.items():
             for entry in feed.entries[:6]:
                 t = re.sub(r'\s*-\s*[^-]+$', '', entry.title)
                 t = re.sub(r'\?.*$', '', t).strip()
+                link = getattr(entry, 'link', 'https://rajjeshrana.github.io/my-news-site/')
                 if not t:
                     continue
                 
                 h_hash = hashlib.md5(t.lower().encode('utf-8')).hexdigest()
-                if t not in cleaned_titles:
-                    cleaned_titles.append(t)
+                
+                # Deduplicate by title
+                if not any(item['title'] == t for item in cleaned_items):
+                    cleaned_items.append({"title": t, "link": link})
                     seen_headline_hashes.add(h_hash)
         except Exception as e:
             print(f"⚠️ Error fetching {cat_name} from {feed_url}: {e}")
             
-    if cleaned_titles:
-        category_data[cat_name] = cleaned_titles[:6]
+    if cleaned_items:
+        category_data[cat_name] = cleaned_items[:6]
 
 with open(HISTORY_FILE, "w", encoding="utf-8") as f:
     json.dump({"seen_hashes": list(seen_headline_hashes)[-500:]}, f, indent=2)
 
 # ==========================================
-# 3. ADVANCED LLM INFOGRAPHIC CARD GENERATION
+# 3. DYNAMIC TIME-BASED FIRST CARD HEADING
 # ==========================================
-def query_groq_llm(prompt_str):
-    if not GROQ_API_KEY:
-        print("⚠️ GROQ_API_KEY environment variable is empty or missing.")
-        return None
-    groq_url = "https://api.groq.com/openai/v1/chat/completions"
-    groq_headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
-    
-    models_to_try = [
-        "llama-3.3-70b-versatile",
-        "llama-3.1-8b-instant"
-    ]
-    for model in models_to_try:
-        try:
-            payload = {"model": model, "messages": [{"role": "user", "content": prompt_str}], "temperature": 0.2}
-            res = requests.post(groq_url, json=payload, headers=groq_headers, timeout=25)
-            if res.status_code == 200:
-                output = res.json()["choices"][0]["message"]["content"]
-                return re.sub(r'```(?:html|json)?|```', '', output).strip()
-            else:
-                print(f"⚠️ Groq Model {model} returned HTTP {res.status_code}: {res.text}")
-        except Exception as e:
-            print(f"⚠️ Groq API Error on {model}: {e}")
-    return None
-
-intelligence_summary = ""
-if category_data:
-    print("=== Step 2: Generating Deep Light Terminal Intelligence ===")
-    prompt_text = "\n".join([f"[{cat}]: " + " | ".join(items) for cat, items in category_data.items()])
-    
-    pass1_prompt = f"""
-You are a financial research analyst. Synthesize these news headlines into concise bullet points for a terminal view:
-{prompt_text}
-"""
-    intelligence_summary = query_groq_llm(pass1_prompt) or ""
+current_hour = now_ist.hour
+if 7 <= current_hour < 10:
+    first_card_title = "🌅 Pre-Market Briefing & Macro Sheet"
+else:
+    first_card_title = "📊 Mid-Day Market Pulse & Macro Sheet"
 
 # ==========================================
 # 4. TELEGRAM & GREEN-API WHATSAPP BROADCASTS
 # ==========================================
-print("=== Step 3: Executing Telegram & WhatsApp Broadcasts ===")
+print("=== Step 2: Executing Telegram & WhatsApp Broadcasts ===")
 
 def send_telegram_message(time_str, cat_dict):
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
@@ -169,7 +136,7 @@ def send_telegram_message(time_str, cat_dict):
     for cat_title, items in cat_dict.items():
         if not items:
             continue
-        items_text = "\n• ".join(items[:4])
+        items_text = "\n• ".join([f"<a href='{item['link']}'>{item['title']}</a>" for item in items[:4]])
         section_block = f"<b>{cat_title}:</b>\n• {items_text}"
         formatted_sections.append(section_block)
 
@@ -208,7 +175,7 @@ def send_green_api_whatsapp(time_str, cat_dict):
     for cat_title, items in cat_dict.items():
         if not items:
             continue
-        items_text = "\n• ".join(items[:4])
+        items_text = "\n• ".join([f"{item['title']} ({item['link']})" for item in items[:3]])
         formatted_sections.append(f"*{cat_title}:*\n• {items_text}")
 
     sections_text = "\n\n".join(formatted_sections)
@@ -240,21 +207,24 @@ if category_data:
     send_green_api_whatsapp(current_time_str, category_data)
 
 # ==========================================
-# 5. RENDER DYNAMIC LIVE TERMINAL INDEX.HTML
+# 5. RENDER DYNAMIC TERMINAL INDEX.HTML
 # ==========================================
-print("=== Step 4: Formatting Light 6-Block Terminal ===")
+print("=== Step 3: Formatting Dynamic Terminal index.html ===")
 
 ist_time = now_ist.strftime("%b %d, %Y | %I:%M %p IST")
 
 def render_block_html(cat_key):
     items = category_data.get(cat_key, [])
     if not items:
-        return "<p style='color:#94a3b8;'>No fresh headlines ingested in this cycle.</p>"
+        return "<p style='color:#94a3b8; font-size:0.85em;'>No fresh headlines ingested in this cycle.</p>"
     
-    html_items = "".join([f"<li style='margin-bottom:8px;'>{item}</li>" for item in items])
-    return f"<ul style='padding-left:16px;'>{html_items}</ul>"
+    html_items = "".join([
+        f"<li style='margin-bottom:10px; line-height:1.45;'><a href='{item[\"link\"]}' target='_blank' style='color:#1e293b; text-decoration:none; font-weight:600;' onmouseover=\"this.style.color='#d97706'\" onmouseout=\"this.style.color='#1e293b'\">{item[\"title\"]}</a></li>" 
+        for item in items
+    ])
+    return f"<ul style='padding-left:18px; margin:0;'>{html_items}</ul>"
 
-block1_html = render_block_html("🎯 Breakout Stock Setups")
+block1_html = render_block_html("Macro Intelligence")
 block2_html = render_block_html("🎯 Breakout Stock Setups")
 block3_html = render_block_html("Indian Stock Market")
 block4_html = render_block_html("⚡ Breaking Flashes & Geopolitics")
@@ -263,15 +233,21 @@ block6_html = render_block_html("Forex & Commodities")
 
 css_styles = """
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { width: 100vw; height: 100vh; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; color: #1e293b; }
-    .terminal-header { height: 50px; background-color: #ffffff; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; width: 100%; }
+    html, body { width: 100vw; min-height: 100vh; overflow-x: hidden; font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; color: #1e293b; }
+    .terminal-header { height: 50px; background-color: #ffffff; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; width: 100%; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
     .brand-logo { font-size: 1.25em; font-weight: 900; color: #0f172a; }
     .brand-logo span { color: #d97706; }
     .header-info { font-size: 0.85em; color: #64748b; font-weight: 600; }
-    .terminal-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, calc((100vh - 50px) / 2)); gap: 12px; padding: 12px; width: 100vw; height: calc(100vh - 50px); }
-    .grid-block { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-    .block-header { background-color: #f1f5f9; padding: 10px 14px; font-size: 0.88em; font-weight: 800; color: #d97706; border-bottom: 1px solid #cbd5e1; }
-    .block-scroll-body { padding: 12px; overflow-y: auto; flex-grow: 1; font-size: 0.86em; line-height: 1.5; color: #334155; }
+    .terminal-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, minmax(320px, 1fr)); gap: 14px; padding: 14px; width: 100vw; min-height: calc(100vh - 50px); }
+    .grid-block { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; max-height: 420px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .block-header { background-color: #f1f5f9; padding: 10px 14px; font-size: 0.88em; font-weight: 800; color: #d97706; border-bottom: 1px solid #cbd5e1; flex-shrink: 0; }
+    .block-scroll-body { padding: 12px 14px; overflow-y: auto; flex-grow: 1; font-size: 0.86em; color: #334155; }
+    .block-scroll-body::-webkit-scrollbar { width: 5px; }
+    .block-scroll-body::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+    @media (max-width: 1024px) {
+        .terminal-grid { display: flex; flex-direction: column; height: auto; }
+        .grid-block { max-height: none; height: auto; }
+    }
 """
 
 full_html = f"""<!DOCTYPE html>
@@ -289,7 +265,7 @@ full_html = f"""<!DOCTYPE html>
         <div class="header-info">🕒 Synchronized: {ist_time}</div>
     </div>
     <div class="terminal-grid">
-        <div class="grid-block"><div class="block-header">🌅 Pre-Market Briefing & Macro Sheet</div><div class="block-scroll-body">{block1_html}</div></div>
+        <div class="grid-block"><div class="block-header">{first_card_title}</div><div class="block-scroll-body">{block1_html}</div></div>
         <div class="grid-block"><div class="block-header">🎯 High-Conviction Breakout Setups</div><div class="block-scroll-body">{block2_html}</div></div>
         <div class="grid-block"><div class="block-header">🇮🇳 Indian Equities Wire</div><div class="block-scroll-body">{block3_html}</div></div>
         <div class="grid-block"><div class="block-header">⚡ Breaking Flashes & Geopolitics</div><div class="block-scroll-body">{block4_html}</div></div>
@@ -302,4 +278,4 @@ full_html = f"""<!DOCTYPE html>
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("=== Successfully executed Telegram & GREEN-API WhatsApp broadcast! ===")
+print("=== Successfully updated terminal layout and executed broadcasts! ===")
