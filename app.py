@@ -233,7 +233,7 @@ def send_telegram_message(time_str, raw_text):
 
     text_content = re.sub(r'<[^>]+>', '', str(raw_text))
     message_body = (
-        f"🔥 <b>StockVersity Terminal Update</b>\n"
+        f"🔥 <b>StockVersity Light Terminal Update</b>\n"
         f"⏱️ <i>{time_str}</i>\n\n"
         f"{text_content[:3000]}\n\n"
         f"🌐 <a href='https://rajjeshrana.github.io/my-news-site/'>Open Terminal</a>"
@@ -344,8 +344,8 @@ css_styles = """
         padding: 14px;
         overflow-y: auto;
         flex-grow: 1;
-        font-size: 0.9em;
-        line-height: 1.6;
+        font-size: 0.88em;
+        line-height: 1.55;
         color: #334155;
     }
 
@@ -354,6 +354,29 @@ css_styles = """
     .block-scroll-body::-webkit-scrollbar-track { background: #f1f5f9; }
     .block-scroll-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     .block-scroll-body::-webkit-scrollbar-thumb:hover { background: #d97706; }
+
+    /* MACRO DATA METRIC ROWS */
+    .metric-group {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+    }
+
+    .metric-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 3px 0;
+        border-bottom: 1px dashed #e2e8f0;
+    }
+    .metric-row:last-child { border-bottom: none; }
+
+    .metric-label { font-weight: 700; color: #475569; }
+    .metric-val { font-weight: 800; color: #0f172a; }
+    .val-green { color: #15803d; }
+    .val-red { color: #b91c1c; }
 
     /* LIGHT TERMINAL STYLING COMPONENTS */
     .stock-card {
@@ -401,7 +424,7 @@ css_styles = """
             height: auto;
             width: 100%;
         }
-        .grid-block { height: 350px; }
+        .grid-block { height: 420px; }
     }
 """
 
@@ -423,14 +446,26 @@ full_html = f"""<!DOCTYPE html>
     </div>
 
     <div class="terminal-grid">
-        <!-- Block 1: Morning Briefing & Key Pivots -->
+        <!-- Block 1: Morning Pre-Market Briefing & Key Metrics -->
         <div class="grid-block">
             <div class="block-header">
-                <span>🌅 Morning Briefing & Pivot Matrix</span>
+                <span>🌅 Pre-Market Briefing & Macro Sheet</span>
             </div>
             <div class="block-scroll-body">
-                <p><b>Pre-Market Setup:</b> Nifty 50 approaches a critical demand confluence near 23,200–23,000, aligning with key Fibonacci retracement levels. DII inflows support select defense, healthcare, and capital goods counters against net FII selling.</p>
-                <br>
+                <div class="metric-group">
+                    <div class="metric-row"><span class="metric-label">💵 USD / INR Rate:</span><span class="metric-val val-green">95.88 (-0.17%)</span></div>
+                    <div class="metric-row"><span class="metric-label">🛢️ Brent Crude:</span><span class="metric-val val-red">$101.59 / bbl (-2.24%)</span></div>
+                    <div class="metric-row"><span class="metric-label">🛢️ WTI Crude:</span><span class="metric-val val-red">$93.89 / bbl (-2.27%)</span></div>
+                    <div class="metric-row"><span class="metric-label">📈 Nasdaq 100 Fut:</span><span class="metric-val val-green">29,544.50 (+0.33%)</span></div>
+                    <div class="metric-row"><span class="metric-label">📈 S&P 500 Fut:</span><span class="metric-val val-green">7,643.25 (+0.05%)</span></div>
+                    <div class="metric-row"><span class="metric-label">🥇 Gold (Spot/MCX):</span><span class="metric-val">$4,402/oz (~₹1.54L)</span></div>
+                    <div class="metric-row"><span class="metric-label">🥈 Silver (Spot/MCX):</span><span class="metric-val">$65.37/oz (~₹2.40L)</span></div>
+                    <div class="metric-row"><span class="metric-label">🏦 FII Cash Flow:</span><span class="metric-val val-red">-₹3,240 Cr (Net Sellers)</span></div>
+                    <div class="metric-row"><span class="metric-label">🏦 DII Cash Flow:</span><span class="metric-val val-green">+₹2,890 Cr (Net Buyers)</span></div>
+                </div>
+
+                <p style="margin-bottom: 10px;"><b>Overnight Wire:</b> US equities ended mixed as 10-year Treasury yields hold near 4.90%. Crude oil prices pulled back over 2% off multi-month highs, relieving immediate inflation concerns. Domestic institutional buying continues to support Nifty 50 at the 23,200 demand confluence.</p>
+
                 <table class="pivot-mini-table">
                     <thead><tr><th>Index</th><th>Support</th><th>Pivot</th><th>Resistance</th></tr></thead>
                     <tbody>
