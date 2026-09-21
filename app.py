@@ -219,7 +219,7 @@ def render_block_html(cat_key):
         return "<p style='color:#94a3b8; font-size:0.85em;'>No fresh headlines ingested in this cycle.</p>"
     
     html_items = "".join([
-        f"<li style='margin-bottom:10px; line-height:1.45;'><a href='{item[\"link\"]}' target='_blank' style='color:#1e293b; text-decoration:none; font-weight:600;' onmouseover=\"this.style.color='#d97706'\" onmouseout=\"this.style.color='#1e293b'\">{item[\"title\"]}</a></li>" 
+        f"<li style='margin-bottom:10px; line-height:1.45;'><a href='{item['link']}' target='_blank' style='color:#1e293b; text-decoration:none; font-weight:600;' onmouseover=\"this.style.color='#d97706'\" onmouseout=\"this.style.color='#1e293b'\">{item['title']}</a></li>" 
         for item in items
     ])
     return f"<ul style='padding-left:18px; margin:0;'>{html_items}</ul>"
