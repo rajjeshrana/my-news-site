@@ -360,15 +360,20 @@ if ai_bullets_html:
     send_telegram_message(current_time_str, ai_bullets_html)
 
 # ==========================================
-# 5. RENDER HTML PAGE WITH MORNING BRIEFING
+# 5. RENDER HTML PAGE WITH DETAILED BRIEFING
 # ==========================================
-print("=== Step 4: Formatting Light Theme Clickable Mosaic Layout ===")
+print("=== Step 4: Formatting Light Theme Detailed Briefing Layout ===")
 
 latest_block = blocks_history[0] if blocks_history else {}
 latest_cards_html = latest_block.get("html_content", "")
 latest_timestamp = latest_block.get("timestamp", formatted_time)
+latest_raw_content = latest_block.get("raw_text_content", "")
 
-# Dedicated Morning Briefing Banner
+# Extract pure <li> elements from raw intelligence to render inside Morning Briefing Box
+briefing_bullets = re.findall(r'<li>(.*?)</li>', latest_raw_content, re.DOTALL)
+briefing_inner_html = "".join([f"<div class='briefing-item-card'>{b}</div>" for b in briefing_bullets]) if briefing_bullets else "<p class='briefing-desc'>Synchronizing latest market intelligence...</p>"
+
+# Full Pre-Market Briefing Card with Embedded Intelligence, Levels & Stock Picks
 morning_briefing_banner = f"""
 <div class="morning-briefing-card">
     <div class="briefing-header">
@@ -376,11 +381,12 @@ morning_briefing_banner = f"""
         <span class="briefing-time">🌅 {formatted_time}</span>
     </div>
     <h2 class="briefing-title">Pre-Market Market Setup & Institutional Intelligence Briefing</h2>
-    <p class="briefing-desc">Comprehensive morning synthesis covering Nifty 50 demand levels, high-conviction breakout technical setups, and geopolitical energy market boundaries.</p>
+    <div class="briefing-body-grid">
+        {briefing_inner_html}
+    </div>
 </div>
 """
 
-# Clickable Featured Mosaic Hero Section
 featured_mosaic_html = f"""
 <div class="featured-mosaic-grid">
     <a href="{link_featured}" target="_blank" class="mosaic-link large-hero">
@@ -476,15 +482,15 @@ css_styles = """
         font-weight: 600;
     }
 
-    /* MORNING BRIEFING BANNER STYLING */
+    /* DETAILED MORNING BRIEFING BANNER */
     .morning-briefing-card {
-        background: linear-gradient(135deg, #ffffff, #f1f5f9);
+        background: #ffffff;
         border: 1px solid #cbd5e1;
         border-left: 6px solid #d97706;
         border-radius: 8px;
-        padding: 20px 24px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        padding: 22px 26px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
     }
 
     .briefing-header {
@@ -501,17 +507,25 @@ css_styles = """
     }
 
     .briefing-title {
-        font-size: 1.35em;
+        font-size: 1.4em;
         font-weight: 800;
         color: #0f172a;
-        margin: 0 0 6px 0;
+        margin: 0 0 16px 0;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 10px;
     }
 
-    .briefing-desc {
-        font-size: 0.95em;
-        color: #475569;
-        margin: 0;
-        line-height: 1.5;
+    .briefing-body-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .briefing-item-card {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 16px 18px;
+        border-radius: 8px;
     }
 
     /* CLICKABLE MOSAIC WRAPPERS */
@@ -684,7 +698,7 @@ css_styles = """
     }
 
     .stock-breakdown-box {
-        background-color: #f1f5f9;
+        background-color: #ffffff;
         border: 1px solid #e2e8f0;
         padding: 10px 12px;
         border-radius: 6px;
@@ -787,7 +801,7 @@ full_html = f"""<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="300">
-    <title>StockVersity Terminal | Light Intelligence</title>
+    <title>StockVersity Terminal | Detailed Morning Intelligence</title>
     <style>
 {css_styles}
     </style>
@@ -818,4 +832,4 @@ full_html = f"""<!DOCTYPE html>
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("✅ Successfully generated web index.html with Morning Briefing!")
+print("✅ Successfully generated detailed Morning Briefing index.html!")
