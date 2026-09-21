@@ -224,19 +224,31 @@ with open(HISTORY_FILE, "w", encoding="utf-8") as f:
     }, f, indent=2)
 
 # ==========================================
-# 4. TELEGRAM AUTO-BROADCAST VIA BOT API
+# 4. TELEGRAM AUTO-BROADCAST WITH HEADINGS & SPACING
 # ==========================================
-print("=== Step 3: Executing Telegram Broadcast ===")
-def send_telegram_message(time_str, raw_text):
+print("=== Step 3: Executing Formatted Telegram Broadcast ===")
+def send_telegram_message(time_str, cat_dict):
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        print("⚠️ Telegram credentials missing. Skipping broadcast.")
         return
 
-    text_content = re.sub(r'<[^>]+>', '', str(raw_text))
+    formatted_sections = []
+    
+    # Generate clean bold headers with bulleted lists and spacing between subjects
+    for cat_title, items in cat_dict.items():
+        if not items:
+            continue
+        items_text = " ".join(items[:4])
+        section_block = f"• <b>{cat_title}:</b> {items_text}"
+        formatted_sections.append(section_block)
+
+    sections_text = "\n\n".join(formatted_sections)
+
     message_body = (
-        f"🔥 <b>StockVersity Light Terminal Update</b>\n"
+        f"🔥 <b>StockVersity Market Intelligence Briefing</b>\n"
         f"⏱️ <i>{time_str}</i>\n\n"
-        f"{text_content[:3000]}\n\n"
-        f"🌐 <a href='https://rajjeshrana.github.io/my-news-site/'>Open Terminal</a>"
+        f"{sections_text}\n\n"
+        f"🌐 <a href='https://rajjeshrana.github.io/my-news-site/'>Open Live Terminal</a>"
     )
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -248,12 +260,16 @@ def send_telegram_message(time_str, raw_text):
     }
 
     try:
-        requests.post(url, json=payload, timeout=15)
+        res = requests.post(url, json=payload, timeout=15)
+        if res.status_code == 200:
+            print("✅ Successfully sent formatted update to Telegram!")
+        else:
+            print(f"⚠️ Telegram Error {res.status_code}: {res.text}")
     except Exception as e:
         print(f"⚠️ Telegram Request Exception: {e}")
 
-if extracted_intelligence:
-    send_telegram_message(current_time_str, extracted_intelligence)
+if category_data:
+    send_telegram_message(current_time_str, category_data)
 
 # ==========================================
 # 5. RENDER 100% FULL-WIDTH LIGHT TERMINAL
@@ -355,7 +371,7 @@ css_styles = """
     .block-scroll-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     .block-scroll-body::-webkit-scrollbar-thumb:hover { background: #d97706; }
 
-    /* EXACT 2 SIDE-BY-SIDE SIDE COLUMNS FOR MACRO METRICS */
+    /* EXACT 2 SIDE-BY-SIDE COLUMNS FOR MACRO METRICS */
     .macro-two-col {
         display: flex;
         gap: 12px;
@@ -589,4 +605,4 @@ full_html = f"""<!DOCTYPE html>
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("=== Successfully generated side-by-side 2-column macro table in index.html! ===")
+print("=== Successfully generated formatted Telegram messages and 2-column macro index.html! ===")
