@@ -161,12 +161,12 @@ def query_groq_llm(prompt_str):
     groq_url = "https://api.groq.com/openai/v1/chat/completions"
     groq_headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
     
-    # Active & Supported Groq Models
+    # Active Production Groq Models
     models_to_try = [
-        "llama3-70b-8192",
-        "llama-3.2-3b-preview",
-        "llama-3.2-1b-preview",
-        "gemma2-9b-it"
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b",
+        "meta-llama/llama-4-scout-17b-16e-instruct",
+        "qwen/qwen3-32b"
     ]
     for model in models_to_try:
         try:
