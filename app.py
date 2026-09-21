@@ -341,11 +341,11 @@ css_styles = """
 
     /* INTERNAL SCROLLABLE BODY FOR EACH BLOCK */
     .block-scroll-body {
-        padding: 14px;
+        padding: 12px;
         overflow-y: auto;
         flex-grow: 1;
-        font-size: 0.88em;
-        line-height: 1.55;
+        font-size: 0.86em;
+        line-height: 1.5;
         color: #334155;
     }
 
@@ -355,21 +355,30 @@ css_styles = """
     .block-scroll-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     .block-scroll-body::-webkit-scrollbar-thumb:hover { background: #d97706; }
 
-    /* MACRO DATA METRIC ROWS */
-    .metric-group {
+    /* EXACT 2 SIDE-BY-SIDE SIDE COLUMNS FOR MACRO METRICS */
+    .macro-two-col {
+        display: flex;
+        gap: 12px;
         background-color: #f8fafc;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #cbd5e1;
         border-radius: 6px;
-        padding: 10px 12px;
-        margin-bottom: 12px;
+        padding: 8px 10px;
+        margin-bottom: 10px;
+    }
+
+    .col-half {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
     }
 
     .metric-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 3px 0;
+        padding: 4px 0;
         border-bottom: 1px dashed #e2e8f0;
+        font-size: 0.83em;
     }
     .metric-row:last-child { border-bottom: none; }
 
@@ -383,35 +392,35 @@ css_styles = """
         background-color: #f8fafc;
         border: 1px solid #cbd5e1;
         border-left: 4px solid #059669;
-        padding: 10px 12px;
+        padding: 8px 10px;
         border-radius: 4px;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
 
     .stock-row {
         display: flex;
         gap: 6px;
         align-items: center;
-        margin-bottom: 4px;
+        margin-bottom: 3px;
         flex-wrap: wrap;
     }
 
     .ticker { font-weight: 800; color: #0f172a; }
-    .badge-buy { background-color: #d1fae5; color: #047857; padding: 2px 6px; border-radius: 3px; font-size: 0.78em; font-weight: 800; }
-    .badge-target { background-color: #dbeafe; color: #1d4ed8; padding: 2px 6px; border-radius: 3px; font-size: 0.78em; font-weight: 800; }
-    .badge-sl { background-color: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 3px; font-size: 0.78em; font-weight: 800; }
+    .badge-buy { background-color: #d1fae5; color: #047857; padding: 2px 5px; border-radius: 3px; font-size: 0.75em; font-weight: 800; }
+    .badge-target { background-color: #dbeafe; color: #1d4ed8; padding: 2px 5px; border-radius: 3px; font-size: 0.75em; font-weight: 800; }
+    .badge-sl { background-color: #fee2e2; color: #b91c1c; padding: 2px 5px; border-radius: 3px; font-size: 0.75em; font-weight: 800; }
 
-    .rationale { font-size: 0.85em; color: #475569; margin-top: 4px; }
+    .rationale { font-size: 0.82em; color: #475569; margin-top: 2px; }
 
     .pivot-mini-table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 8px;
+        margin-top: 6px;
     }
     .pivot-mini-table th, .pivot-mini-table td {
-        padding: 6px 8px;
+        padding: 5px 6px;
         border-bottom: 1px solid #e2e8f0;
-        font-size: 0.85em;
+        font-size: 0.82em;
         text-align: left;
     }
     .pivot-mini-table th { background-color: #f1f5f9; color: #64748b; font-weight: 700; }
@@ -425,6 +434,7 @@ css_styles = """
             width: 100%;
         }
         .grid-block { height: 420px; }
+        .macro-two-col { flex-direction: column; gap: 0; }
     }
 """
 
@@ -446,28 +456,34 @@ full_html = f"""<!DOCTYPE html>
     </div>
 
     <div class="terminal-grid">
-        <!-- Block 1: Morning Pre-Market Briefing & Key Metrics -->
+        <!-- Block 1: Morning Pre-Market Briefing & Exact 2 Side-by-Side Columns -->
         <div class="grid-block">
             <div class="block-header">
                 <span>🌅 Pre-Market Briefing & Macro Sheet</span>
             </div>
             <div class="block-scroll-body">
-                <div class="metric-group">
-                    <div class="metric-row"><span class="metric-label">💵 USD / INR Rate:</span><span class="metric-val val-green">95.88 (-0.17%)</span></div>
-                    <div class="metric-row"><span class="metric-label">🛢️ Brent Crude:</span><span class="metric-val val-red">$101.59 / bbl (-2.24%)</span></div>
-                    <div class="metric-row"><span class="metric-label">🛢️ WTI Crude:</span><span class="metric-val val-red">$93.89 / bbl (-2.27%)</span></div>
-                    <div class="metric-row"><span class="metric-label">📈 Nasdaq 100 Fut:</span><span class="metric-val val-green">29,544.50 (+0.33%)</span></div>
-                    <div class="metric-row"><span class="metric-label">📈 S&P 500 Fut:</span><span class="metric-val val-green">7,643.25 (+0.05%)</span></div>
-                    <div class="metric-row"><span class="metric-label">🥇 Gold (Spot/MCX):</span><span class="metric-val">$4,402/oz (~₹1.54L)</span></div>
-                    <div class="metric-row"><span class="metric-label">🥈 Silver (Spot/MCX):</span><span class="metric-val">$65.37/oz (~₹2.40L)</span></div>
-                    <div class="metric-row"><span class="metric-label">🏦 FII Cash Flow:</span><span class="metric-val val-red">-₹3,240 Cr (Net Sellers)</span></div>
-                    <div class="metric-row"><span class="metric-label">🏦 DII Cash Flow:</span><span class="metric-val val-green">+₹2,890 Cr (Net Buyers)</span></div>
+                <!-- 2 Side-by-Side Columns -->
+                <div class="macro-two-col">
+                    <div class="col-half">
+                        <div class="metric-row"><span class="metric-label">💵 USD / INR:</span><span class="metric-val val-green">95.88 (-0.17%)</span></div>
+                        <div class="metric-row"><span class="metric-label">🛢️ Brent Crude:</span><span class="metric-val val-red">$101.59 (-2.24%)</span></div>
+                        <div class="metric-row"><span class="metric-label">🛢️ WTI Crude:</span><span class="metric-val val-red">$93.89 (-2.27%)</span></div>
+                        <div class="metric-row"><span class="metric-label">📈 Nasdaq 100 Fut:</span><span class="metric-val val-green">29,544.50 (+0.33%)</span></div>
+                        <div class="metric-row"><span class="metric-label">📈 S&P 500 Fut:</span><span class="metric-val val-green">7,643.25 (+0.05%)</span></div>
+                    </div>
+                    <div class="col-half">
+                        <div class="metric-row"><span class="metric-label">🥇 Gold (Spot/MCX):</span><span class="metric-val">$4,402 (~₹1.54L)</span></div>
+                        <div class="metric-row"><span class="metric-label">🥈 Silver (Spot/MCX):</span><span class="metric-val">$65.37 (~₹2.40L)</span></div>
+                        <div class="metric-row"><span class="metric-label">🏦 FII Cash Flow:</span><span class="metric-val val-red">-₹3,240 Cr (Sellers)</span></div>
+                        <div class="metric-row"><span class="metric-label">🏦 DII Cash Flow:</span><span class="metric-val val-green">+₹2,890 Cr (Buyers)</span></div>
+                        <div class="metric-row"><span class="metric-label">⚡ Market Stance:</span><span class="metric-val val-green">Supportive DII</span></div>
+                    </div>
                 </div>
 
-                <p style="margin-bottom: 10px;"><b>Overnight Wire:</b> US equities ended mixed as 10-year Treasury yields hold near 4.90%. Crude oil prices pulled back over 2% off multi-month highs, relieving immediate inflation concerns. Domestic institutional buying continues to support Nifty 50 at the 23,200 demand confluence.</p>
+                <p style="margin-bottom: 8px;"><b>Overnight Wire:</b> US markets ended mixed as Treasuries hold near 4.90%. Brent Crude pulled back over 2% off recent highs, relieving immediate import inflation pressure. Domestic institutional inflows continue supporting Nifty 50 at 23,200.</p>
 
                 <table class="pivot-mini-table">
-                    <thead><tr><th>Index</th><th>Support</th><th>Pivot</th><th>Resistance</th></tr></thead>
+                    <thead><tr><th>Index</th><th>Support (S1)</th><th>Pivot (P)</th><th>Resistance (R1)</th></tr></thead>
                     <tbody>
                         <tr><td><b>Nifty 50</b></td><td style="color:#dc2626; font-weight:700;">23,210</td><td style="color:#2563eb; font-weight:700;">23,300</td><td style="color:#16a34a; font-weight:700;">23,390</td></tr>
                         <tr><td><b>Bank Nifty</b></td><td style="color:#dc2626; font-weight:700;">49,550</td><td style="color:#2563eb; font-weight:700;">49,800</td><td style="color:#16a34a; font-weight:700;">50,050</td></tr>
@@ -573,4 +589,4 @@ full_html = f"""<!DOCTYPE html>
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("=== Successfully generated 100% Full-Width Light Terminal index.html! ===")
+print("=== Successfully generated side-by-side 2-column macro table in index.html! ===")
