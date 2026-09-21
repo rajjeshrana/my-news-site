@@ -146,6 +146,11 @@ for cat_name, feed_urls in CATEGORY_FEEDS.items():
         category_images[cat_name] = cat_img or FALLBACK_IMAGE
         category_links[cat_name] = first_link or "https://rajjeshrana.github.io/my-news-site/"
 
+# Fallback link mapping
+link_featured = category_links.get("Indian Stock Market", "https://rajjeshrana.github.io/my-news-site/")
+link_breakouts = category_links.get("🎯 Breakout Stock Setups", "https://rajjeshrana.github.io/my-news-site/")
+link_macro = category_links.get("⚡ Breaking Flashes & Geopolitics", "https://rajjeshrana.github.io/my-news-site/")
+
 # ==========================================
 # 3. ADVANCED LLM INFOGRAPHIC CARD GENERATION
 # ==========================================
@@ -158,7 +163,6 @@ def query_groq_llm(prompt_str):
     groq_url = "https://api.groq.com/openai/v1/chat/completions"
     groq_headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
     
-    # Active Groq Models List
     models_to_try = [
         "llama-3.3-70b-versatile", 
         "llama-3.1-8b-instant", 
@@ -275,9 +279,11 @@ Extracted Intelligence:
         
         card_item = f"""
         <div class="trending-card">
-            <div class="card-image-wrap" style="background-image: url('{img_url}');">
-                <div class="image-overlay"></div>
-            </div>
+            <a href="{source_link}" target="_blank" class="card-image-link">
+                <div class="card-image-wrap" style="background-image: url('{img_url}');">
+                    <div class="image-overlay"></div>
+                </div>
+            </a>
             <div class="card-content-wrap">
                 {b_text}
                 <div class="card-footer">
@@ -325,9 +331,7 @@ def send_telegram_message(time_str, html_bullets):
     text_content = html_bullets.replace("<li>", "• ").replace("</li>", "\n\n").replace("<br>", "\n")
     text_content = re.sub(r'<div[^>]*>', '', text_content).replace('</div>', '')
     text_content = re.sub(r'<span[^>]*>', '', text_content).replace('</span>', '')
-    
-    # Corrected regex parameter syntax
-    text_content = re.sub(r'<h3[^>]*>', '<b>', text_content).replace('</h3>', '</b>\n')
+    text_content = re.sub(r'<h3[^>]*>', '<b>', text_content).replace('3>', '</b>\n')
     
     message_body = (
         f"🔥 <b>StockVersity Light Terminal Intelligence Update</b>\n"
@@ -357,40 +361,50 @@ if ai_bullets_html:
     send_telegram_message(current_time_str, ai_bullets_html)
 
 # ==========================================
-# 5. RENDER HTML PAGE WITH LIGHT THEME UI
+# 5. RENDER HTML PAGE WITH CLICKABLE MOSAIC UI
 # ==========================================
-print("=== Step 4: Formatting Light Theme Mosaic Layout ===")
+print("=== Step 4: Formatting Light Theme Clickable Mosaic Layout ===")
 
 latest_block = blocks_history[0] if blocks_history else {}
 latest_cards_html = latest_block.get("html_content", "")
 latest_timestamp = latest_block.get("timestamp", formatted_time)
 
+# Clickable Featured Mosaic Hero Section
 featured_mosaic_html = f"""
 <div class="featured-mosaic-grid">
-    <div class="mosaic-item large-hero" style="background-image: url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80');">
-        <div class="mosaic-overlay"></div>
-        <div class="mosaic-content">
-            <span class="yellow-badge">FEATURED RESEARCH</span>
-            <span class="mosaic-date">⏱️ {latest_timestamp}</span>
-            <h2 class="mosaic-title">New Research: Institutional Flows, Nifty Confluence Zones & Weekly Breakouts</h2>
+    <!-- Main Large Feature Card (Clickable) -->
+    <a href="{link_featured}" target="_blank" class="mosaic-link large-hero">
+        <div class="mosaic-item" style="background-image: url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80');">
+            <div class="mosaic-overlay"></div>
+            <div class="mosaic-content">
+                <span class="yellow-badge">FEATURED RESEARCH</span>
+                <span class="mosaic-date">⏱️ {latest_timestamp}</span>
+                <h2 class="mosaic-title">New Research: Institutional Flows, Nifty Confluence Zones & Weekly Breakouts</h2>
+            </div>
         </div>
-    </div>
+    </a>
     
-    <div class="mosaic-item medium-top" style="background-image: url('https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80');">
-        <div class="mosaic-overlay"></div>
-        <div class="mosaic-content">
-            <span class="yellow-badge">BREAKOUTS</span>
-            <h3 class="mosaic-title-sm">APARIND, BEML & Aegis Vopak Lead Momentum Charts</h3>
+    <!-- Top Right Card (Clickable) -->
+    <a href="{link_breakouts}" target="_blank" class="mosaic-link medium-top">
+        <div class="mosaic-item" style="background-image: url('https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80');">
+            <div class="mosaic-overlay"></div>
+            <div class="mosaic-content">
+                <span class="yellow-badge">BREAKOUTS</span>
+                <h3 class="mosaic-title-sm">APARIND, BEML & Aegis Vopak Lead Momentum Charts</h3>
+            </div>
         </div>
-    </div>
+    </a>
 
-    <div class="mosaic-item medium-bottom" style="background-image: url('https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=800&q=80');">
-        <div class="mosaic-overlay"></div>
-        <div class="mosaic-content">
-            <span class="yellow-badge">GLOBAL MACRO</span>
-            <h3 class="mosaic-title-sm">Geopolitical Flashes: Crude Oil Holds Near $80 as Fed Tracks CPI</h3>
+    <!-- Bottom Right Card (Clickable) -->
+    <a href="{link_macro}" target="_blank" class="mosaic-link medium-bottom">
+        <div class="mosaic-item" style="background-image: url('https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=800&q=80');">
+            <div class="mosaic-overlay"></div>
+            <div class="mosaic-content">
+                <span class="yellow-badge">GLOBAL MACRO</span>
+                <h3 class="mosaic-title-sm">Geopolitical Flashes: Crude Oil Holds Near $80 as Fed Tracks CPI</h3>
+            </div>
         </div>
-    </div>
+    </a>
 </div>
 """
 
@@ -454,6 +468,7 @@ css_styles = """
         font-weight: 600;
     }
 
+    /* CLICKABLE MOSAIC WRAPPERS */
     .featured-mosaic-grid {
         display: grid;
         grid-template-columns: 2fr 1fr;
@@ -462,21 +477,34 @@ css_styles = """
         margin-bottom: 40px;
     }
 
-    .mosaic-item {
-        position: relative;
-        background-size: cover;
-        background-position: center;
-        border-radius: 8px;
+    .mosaic-link {
+        display: block;
+        text-decoration: none;
         overflow: hidden;
+        border-radius: 8px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
-    .mosaic-item.large-hero { grid-row: span 2; }
+    .mosaic-link:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.18);
+    }
+
+    .mosaic-link.large-hero { grid-row: span 2; }
+
+    .mosaic-item {
+        position: relative;
+        height: 100%;
+        width: 100%;
+        background-size: cover;
+        background-position: center;
+    }
 
     .mosaic-overlay {
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
-        background: linear-gradient(180deg, rgba(15, 23, 42, 0.2) 0%, rgba(15, 23, 42, 0.85) 90%);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.2) 0%, rgba(15, 23, 42, 0.88) 90%);
     }
 
     .mosaic-content {
@@ -555,6 +583,8 @@ css_styles = """
         display: flex;
         flex-direction: column;
     }
+
+    .card-image-link { display: block; }
 
     .card-image-wrap {
         height: 180px;
@@ -700,8 +730,8 @@ css_styles = """
             grid-template-columns: 1fr;
             grid-template-rows: auto;
         }
-        .mosaic-item.large-hero { grid-row: auto; height: 260px; }
-        .mosaic-item { height: 180px; }
+        .mosaic-link.large-hero { grid-row: auto; height: 260px; }
+        .mosaic-link { height: 180px; }
     }
 """
 
@@ -711,7 +741,7 @@ full_html = f"""<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="300">
-    <title>StockVersity Terminal | Light Intelligence</title>
+    <title>StockVersity Terminal | Clickable Light Intelligence</title>
     <style>
 {css_styles}
     </style>
@@ -740,4 +770,4 @@ full_html = f"""<!DOCTYPE html>
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("✅ Successfully generated corrected app.py!")
+print("✅ Successfully generated clickable hero card index.html!")
