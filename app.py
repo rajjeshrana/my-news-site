@@ -178,7 +178,7 @@ def query_groq_llm(prompt_str):
     return None
 
 if category_data:
-    print("=== Step 2: Generating Deep Classic Terminal Cards ===")
+    print("=== Step 2: Generating Deep Light Terminal Intelligence ===")
     prompt_text = "\n".join([f"[{cat}]: " + " | ".join(items) for cat, items in category_data.items()])
     
     pass1_prompt = f"""
@@ -205,31 +205,10 @@ Input Headlines:
 """
     extracted_intelligence = query_groq_llm(pass1_prompt) or prompt_text
 
-    pass2_prompt = f"""
-Convert the extracted market intelligence into JSON blocks for 6 classic terminal containers:
-
-Respond ONLY with valid JSON formatted like this:
-{{
-  "morning_briefing": "Full 3-4 sentence pre-market summary...",
-  "breakouts": [
-    {{"ticker": "APARIND", "action": "BUY", "range": "₹17,750–₹17,800", "target": "₹19,200", "sl": "₹16,528", "rationale": "Oversold PMOX reading and 14-day RSI crossover signal momentum resumption."}},
-    {{"ticker": "BEML", "action": "BUY", "range": "₹2,000–₹2,010", "target": "₹2,120", "sl": "₹1,920", "rationale": "Retesting key 40-brick Renko support level with strong volume base."}}
-  ],
-  "indian_equities": "Nifty 50 approaches demand confluence near 23,200–23,000...",
-  "geopolitics": "Geopolitical risk premiums remain elevated as energy markets track Middle East developments...",
-  "global_macro": "Wall Street benchmarks consolidate as 10-year Treasury yields hold near 4.90%...",
-  "forex_commodities": "Brent Crude holds near $80.20/bbl supported by regional geopolitical risk..."
-}}
-
-Extracted Intelligence:
-{extracted_intelligence}
-"""
-    ai_bullets_html = query_groq_llm(pass2_prompt)
-
     new_block = {
         "timestamp": current_time_str,
         "time_epoch": now_utc.timestamp(),
-        "raw_text_content": ai_bullets_html or extracted_intelligence
+        "raw_text_content": extracted_intelligence
     }
     blocks_history.insert(0, new_block)
 
@@ -254,10 +233,10 @@ def send_telegram_message(time_str, raw_text):
 
     text_content = re.sub(r'<[^>]+>', '', str(raw_text))
     message_body = (
-        f"🔥 <b>StockVersity Classic Terminal Update</b>\n"
+        f"🔥 <b>StockVersity Terminal Update</b>\n"
         f"⏱️ <i>{time_str}</i>\n\n"
         f"{text_content[:3000]}\n\n"
-        f"🌐 <a href='https://rajjeshrana.github.io/my-news-site/'>Open Full Terminal</a>"
+        f"🌐 <a href='https://rajjeshrana.github.io/my-news-site/'>Open Terminal</a>"
     )
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -273,13 +252,13 @@ def send_telegram_message(time_str, raw_text):
     except Exception as e:
         print(f"⚠️ Telegram Request Exception: {e}")
 
-if ai_bullets_html:
-    send_telegram_message(current_time_str, ai_bullets_html)
+if extracted_intelligence:
+    send_telegram_message(current_time_str, extracted_intelligence)
 
 # ==========================================
-# 5. RENDER 100% FULL-WIDTH 6-BLOCK TERMINAL
+# 5. RENDER 100% FULL-WIDTH LIGHT TERMINAL
 # ==========================================
-print("=== Step 4: Formatting 6-Block Full-Width Classic Terminal ===")
+print("=== Step 4: Formatting Light 6-Block Terminal ===")
 
 ist_time = now_ist.strftime("%b %d, %Y | %I:%M %p IST")
 
@@ -289,36 +268,37 @@ css_styles = """
         width: 100vw; 
         height: 100vh; 
         overflow: hidden; 
-        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; 
-        background-color: #0b0e14; 
-        color: #d1d5db; 
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+        background-color: #f8fafc; 
+        color: #1e293b; 
     }
 
     /* TOP TERMINAL HEADER */
     .terminal-header {
         height: 50px;
-        background-color: #111827;
-        border-bottom: 2px solid #1f2937;
+        background-color: #ffffff;
+        border-bottom: 2px solid #e2e8f0;
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 0 20px;
         width: 100%;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
 
     .brand-logo {
         font-size: 1.25em;
         font-weight: 900;
         letter-spacing: -0.5px;
-        color: #ffffff;
+        color: #0f172a;
         text-transform: uppercase;
     }
 
-    .brand-logo span { color: #f59e0b; }
+    .brand-logo span { color: #d97706; }
 
     .header-info {
         font-size: 0.85em;
-        color: #9ca3af;
+        color: #64748b;
         font-weight: 600;
     }
 
@@ -334,25 +314,25 @@ css_styles = """
     }
 
     .grid-block {
-        background-color: #151c28;
-        border: 1px solid #1f2937;
+        background-color: #ffffff;
+        border: 1px solid #cbd5e1;
         border-radius: 6px;
         display: flex;
         flex-direction: column;
         height: 100%;
         overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
     .block-header {
-        background-color: #0d131d;
+        background-color: #f1f5f9;
         padding: 10px 14px;
         font-size: 0.88em;
         font-weight: 800;
-        color: #f59e0b;
+        color: #d97706;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        border-bottom: 1px solid #1f2937;
+        border-bottom: 1px solid #cbd5e1;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -366,20 +346,20 @@ css_styles = """
         flex-grow: 1;
         font-size: 0.9em;
         line-height: 1.6;
-        color: #cbd5e1;
+        color: #334155;
     }
 
     /* CUSTOM INTERNAL SCROLLBARS */
     .block-scroll-body::-webkit-scrollbar { width: 6px; }
-    .block-scroll-body::-webkit-scrollbar-track { background: #0d131d; }
-    .block-scroll-body::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
-    .block-scroll-body::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+    .block-scroll-body::-webkit-scrollbar-track { background: #f1f5f9; }
+    .block-scroll-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .block-scroll-body::-webkit-scrollbar-thumb:hover { background: #d97706; }
 
-    /* CLASSIC TERMINAL STYLING COMPONENTS */
+    /* LIGHT TERMINAL STYLING COMPONENTS */
     .stock-card {
-        background-color: #0b0e14;
-        border: 1px solid #1f2937;
-        border-left: 4px solid #10b981;
+        background-color: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-left: 4px solid #059669;
         padding: 10px 12px;
         border-radius: 4px;
         margin-bottom: 10px;
@@ -393,12 +373,12 @@ css_styles = """
         flex-wrap: wrap;
     }
 
-    .ticker { font-weight: 800; color: #ffffff; }
-    .badge-buy { background-color: rgba(16, 185, 129, 0.2); color: #34d399; padding: 2px 6px; border-radius: 3px; font-size: 0.78em; font-weight: 800; }
-    .badge-target { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 2px 6px; border-radius: 3px; font-size: 0.78em; font-weight: 800; }
-    .badge-sl { background-color: rgba(239, 68, 68, 0.2); color: #f87171; padding: 2px 6px; border-radius: 3px; font-size: 0.78em; font-weight: 800; }
+    .ticker { font-weight: 800; color: #0f172a; }
+    .badge-buy { background-color: #d1fae5; color: #047857; padding: 2px 6px; border-radius: 3px; font-size: 0.78em; font-weight: 800; }
+    .badge-target { background-color: #dbeafe; color: #1d4ed8; padding: 2px 6px; border-radius: 3px; font-size: 0.78em; font-weight: 800; }
+    .badge-sl { background-color: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 3px; font-size: 0.78em; font-weight: 800; }
 
-    .rationale { font-size: 0.85em; color: #9ca3af; margin-top: 4px; }
+    .rationale { font-size: 0.85em; color: #475569; margin-top: 4px; }
 
     .pivot-mini-table {
         width: 100%;
@@ -407,11 +387,11 @@ css_styles = """
     }
     .pivot-mini-table th, .pivot-mini-table td {
         padding: 6px 8px;
-        border-bottom: 1px solid #1f2937;
+        border-bottom: 1px solid #e2e8f0;
         font-size: 0.85em;
         text-align: left;
     }
-    .pivot-mini-table th { background-color: #0d131d; color: #6b7280; }
+    .pivot-mini-table th { background-color: #f1f5f9; color: #64748b; font-weight: 700; }
 
     @media (max-width: 1024px) {
         body { overflow-y: auto; height: auto; }
@@ -431,14 +411,14 @@ full_html = f"""<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="300">
-    <title>StockVersity Classic Market Terminal</title>
+    <title>StockVersity Light Terminal</title>
     <style>
 {css_styles}
     </style>
 </head>
 <body>
     <div class="terminal-header">
-        <div class="brand-logo">Stock<span>Versity</span> Classic Terminal</div>
+        <div class="brand-logo">Stock<span>Versity</span> Terminal</div>
         <div class="header-info">🕒 Synchronized: {ist_time}</div>
     </div>
 
@@ -447,7 +427,6 @@ full_html = f"""<!DOCTYPE html>
         <div class="grid-block">
             <div class="block-header">
                 <span>🌅 Morning Briefing & Pivot Matrix</span>
-                <span>[01]</span>
             </div>
             <div class="block-scroll-body">
                 <p><b>Pre-Market Setup:</b> Nifty 50 approaches a critical demand confluence near 23,200–23,000, aligning with key Fibonacci retracement levels. DII inflows support select defense, healthcare, and capital goods counters against net FII selling.</p>
@@ -455,9 +434,9 @@ full_html = f"""<!DOCTYPE html>
                 <table class="pivot-mini-table">
                     <thead><tr><th>Index</th><th>Support</th><th>Pivot</th><th>Resistance</th></tr></thead>
                     <tbody>
-                        <tr><td><b>Nifty 50</b></td><td style="color:#f87171;">23,210</td><td style="color:#60a5fa;">23,300</td><td style="color:#34d399;">23,390</td></tr>
-                        <tr><td><b>Bank Nifty</b></td><td style="color:#f87171;">49,550</td><td style="color:#60a5fa;">49,800</td><td style="color:#34d399;">50,050</td></tr>
-                        <tr><td><b>Sensex</b></td><td style="color:#f87171;">76,200</td><td style="color:#60a5fa;">76,500</td><td style="color:#34d399;">76,800</td></tr>
+                        <tr><td><b>Nifty 50</b></td><td style="color:#dc2626; font-weight:700;">23,210</td><td style="color:#2563eb; font-weight:700;">23,300</td><td style="color:#16a34a; font-weight:700;">23,390</td></tr>
+                        <tr><td><b>Bank Nifty</b></td><td style="color:#dc2626; font-weight:700;">49,550</td><td style="color:#2563eb; font-weight:700;">49,800</td><td style="color:#16a34a; font-weight:700;">50,050</td></tr>
+                        <tr><td><b>Sensex</b></td><td style="color:#dc2626; font-weight:700;">76,200</td><td style="color:#2563eb; font-weight:700;">76,500</td><td style="color:#16a34a; font-weight:700;">76,800</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -467,7 +446,6 @@ full_html = f"""<!DOCTYPE html>
         <div class="grid-block">
             <div class="block-header">
                 <span>🎯 High-Conviction Breakout Setups</span>
-                <span>[02]</span>
             </div>
             <div class="block-scroll-body">
                 <div class="stock-card">
@@ -506,7 +484,6 @@ full_html = f"""<!DOCTYPE html>
         <div class="grid-block">
             <div class="block-header">
                 <span>🇮🇳 Indian Equities & Nifty 50 Wire</span>
-                <span>[03]</span>
             </div>
             <div class="block-scroll-body">
                 <p><b>Market Outlook:</b> Indian equity benchmarks open on a defensive note as investors monitor global crude oil movements and domestic institutional buying. Sectoral trends favor capital goods and pharmaceutical stocks.</p>
@@ -520,7 +497,6 @@ full_html = f"""<!DOCTYPE html>
         <div class="grid-block">
             <div class="block-header">
                 <span>⚡ Breaking Flashes & Geopolitics</span>
-                <span>[04]</span>
             </div>
             <div class="block-scroll-body">
                 <p><b>Global Energy Wire:</b> Geopolitical risk premiums remain elevated across international energy markets as traders monitor Middle East shipping routes and military readiness discussions.</p>
@@ -534,7 +510,6 @@ full_html = f"""<!DOCTYPE html>
         <div class="grid-block">
             <div class="block-header">
                 <span>🌍 US & Global Macro Intelligence</span>
-                <span>[05]</span>
             </div>
             <div class="block-scroll-body">
                 <p><b>Wall Street Wire:</b> US equity indices trade in narrow ranges as 10-year Treasury yields hold firm around 4.90% ahead of upcoming Federal Reserve monetary policy speeches.</p>
@@ -548,7 +523,6 @@ full_html = f"""<!DOCTYPE html>
         <div class="grid-block">
             <div class="block-header">
                 <span>🛢️ Forex & Energy Market Boundaries</span>
-                <span>[06]</span>
             </div>
             <div class="block-scroll-body">
                 <p><b>Commodity Boundaries:</b> Brent Crude contracts hold near $80.20 per barrel. USD/INR trades within a controlled 83.35–83.65 trading range maintained by Reserve Bank of India FX operations.</p>
@@ -564,4 +538,4 @@ full_html = f"""<!DOCTYPE html>
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(full_html)
 
-print("=== Successfully generated 100% Full-Width 6-Block Classic Terminal index.html! ===")
+print("=== Successfully generated 100% Full-Width Light Terminal index.html! ===")
