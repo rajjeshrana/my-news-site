@@ -63,25 +63,12 @@ def clean_url(url_str):
     return match.group(0) if match else url_str
 
 # ==========================================
-# 2. INGEST HEADLINES WITH LINKS
+# 2. INGEST HEADLINES WITH GUARANTEED FALLBACK
 # ==========================================
 print("=== Step 1: Ingesting Live Multi-Source Market Feeds ===")
 now_ist = datetime.now(ZoneInfo("Asia/Kolkata"))
 formatted_time = now_ist.strftime("%b %d, %Y | %I:%M %p IST")
 current_time_str = f"{formatted_time} (Live Terminal Stream)"
-now_utc = datetime.now(timezone.utc)
-
-HISTORY_FILE = "history.json"
-seen_headline_hashes = set()
-
-if os.path.exists(HISTORY_FILE):
-    try:
-        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-            store = json.load(f)
-            if isinstance(store, dict):
-                seen_headline_hashes = set(store.get("seen_hashes", []))
-    except Exception as e:
-        print(f"⚠️ Load error on history.json: {e}")
 
 category_data = {}
 
@@ -98,20 +85,13 @@ for cat_name, feed_urls in CATEGORY_FEEDS.items():
                 if not t:
                     continue
                 
-                h_hash = hashlib.md5(t.lower().encode('utf-8')).hexdigest()
-                
-                # Deduplicate by title
                 if not any(item['title'] == t for item in cleaned_items):
                     cleaned_items.append({"title": t, "link": link})
-                    seen_headline_hashes.add(h_hash)
         except Exception as e:
             print(f"⚠️ Error fetching {cat_name} from {feed_url}: {e}")
             
     if cleaned_items:
         category_data[cat_name] = cleaned_items[:6]
-
-with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-    json.dump({"seen_hashes": list(seen_headline_hashes)[-500:]}, f, indent=2)
 
 # ==========================================
 # 3. DYNAMIC TIME-BASED FIRST CARD HEADING
@@ -123,9 +103,9 @@ else:
     first_card_title = "📊 Mid-Day Market Pulse & Macro Sheet"
 
 # ==========================================
-# 4. TELEGRAM & GREEN-API WHATSAPP BROADCASTS
+# 4. ALWAYS-ON DUAL BROADCAST (TELEGRAM & WHATSAPP)
 # ==========================================
-print("=== Step 2: Executing Telegram & WhatsApp Broadcasts ===")
+print("=== Step 2: Executing Always-On Broadcasts ===")
 
 def send_telegram_message(time_str, cat_dict):
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
@@ -136,7 +116,7 @@ def send_telegram_message(time_str, cat_dict):
     for cat_title, items in cat_dict.items():
         if not items:
             continue
-        items_text = "\n• ".join([f"<a href='{item['link']}'>{item['title']}</a>" for item in items[:4]])
+        items_text = "\n• ".join([f"<a href='{item['link']}'>{item['title']}</a>" for item in items[:3]])
         section_block = f"<b>{cat_title}:</b>\n• {items_text}"
         formatted_sections.append(section_block)
 
@@ -175,7 +155,7 @@ def send_green_api_whatsapp(time_str, cat_dict):
     for cat_title, items in cat_dict.items():
         if not items:
             continue
-        items_text = "\n• ".join([f"{item['title']} ({item['link']})" for item in items[:3]])
+        items_text = "\n• ".join([f"{item['title']} ({item['link']})" for item in items[:2]])
         formatted_sections.append(f"*{cat_title}:*\n• {items_text}")
 
     sections_text = "\n\n".join(formatted_sections)
@@ -202,9 +182,9 @@ def send_green_api_whatsapp(time_str, cat_dict):
     except Exception as e:
         print(f"⚠️ GREEN-API Request Exception: {e}")
 
-if category_data:
-    send_telegram_message(current_time_str, category_data)
-    send_green_api_whatsapp(current_time_str, category_data)
+# GUARANTEED EXECUTION: NEVER SKIP BROADCAST
+send_telegram_message(current_time_str, category_data)
+send_green_api_whatsapp(current_time_str, category_data)
 
 # ==========================================
 # 5. RENDER DYNAMIC TERMINAL INDEX.HTML
